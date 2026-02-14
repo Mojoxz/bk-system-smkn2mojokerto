@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('admins', function (Blueprint $table) {
@@ -19,16 +16,13 @@ return new class extends Migration
             $table->string('password');
             $table->text('address')->nullable();
             $table->string('phone')->nullable();
-            $table->enum('role', ['superadmin', 'admin'])->default('admin');
+            $table->enum('role', ['super_admin', 'admin'])->default('admin');
             $table->boolean('is_active')->default(true);
-            $table->timestamps();
             $table->rememberToken();
+            $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('admins');
