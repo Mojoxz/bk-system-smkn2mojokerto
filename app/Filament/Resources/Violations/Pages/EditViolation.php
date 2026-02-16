@@ -6,6 +6,7 @@ use App\Filament\Resources\ViolationResource;
 use App\Services\ViolationService;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditViolation extends EditRecord
 {
@@ -14,13 +15,19 @@ class EditViolation extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\ViewAction::make(),
             Actions\DeleteAction::make(),
         ];
     }
 
-    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
         $service = new ViolationService();
         return $service->updateViolation($record, $data);
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

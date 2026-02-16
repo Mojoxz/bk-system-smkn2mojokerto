@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\ViolationCategories\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class ViolationCategoriesTable
@@ -16,33 +18,58 @@ class ViolationCategoriesTable
         return $table
             ->columns([
                 TextColumn::make('code')
-                    ->searchable(),
+                    ->label('Kode')
+                    ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color('primary'),
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Nama Kategori')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('description')
+                    ->label('Deskripsi')
+                    ->limit(50)
+                    ->toggleable(),
+                TextColumn::make('violation_types_count')
+                    ->label('Jumlah Jenis')
+                    ->counts('violationTypes')
+                    ->sortable(),
                 TextColumn::make('order')
+                    ->label('Urutan')
                     ->numeric()
                     ->sortable(),
                 IconColumn::make('is_active')
-                    ->boolean(),
+                    ->label('Status')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Diupdate')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                TernaryFilter::make('is_active')
+                    ->label('Status Aktif')
+                    ->placeholder('Semua')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Tidak Aktif'),
             ])
-            ->recordActions([
+            ->actions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('order');
     }
 }

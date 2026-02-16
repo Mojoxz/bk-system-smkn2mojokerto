@@ -5,10 +5,21 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ViolationTypeResource\Pages;
 use App\Models\ViolationType;
 use App\Models\ViolationCategory;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class ViolationTypeResource extends Resource
@@ -23,39 +34,39 @@ class ViolationTypeResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\Select::make('violation_category_id')
+                        Select::make('violation_category_id')
                             ->label('Kategori Pelanggaran')
                             ->options(ViolationCategory::active()->ordered()->pluck('name', 'id'))
                             ->required()
                             ->searchable()
                             ->preload(),
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Jenis Pelanggaran')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('Terlambat, Tidak Mengerjakan PR, dll'),
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Deskripsi')
                             ->rows(3)
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('points')
+                        TextInput::make('points')
                             ->label('Poin')
                             ->numeric()
                             ->required()
                             ->default(0)
                             ->minValue(0)
                             ->helperText('Poin yang akan ditambahkan jika melakukan pelanggaran ini'),
-                        Forms\Components\Toggle::make('is_custom')
+                        Toggle::make('is_custom')
                             ->label('Custom Poin')
                             ->helperText('Jika diaktifkan, admin bisa input poin sendiri saat mencatat pelanggaran')
                             ->default(false),
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
                             ->required(),
@@ -68,63 +79,63 @@ class ViolationTypeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('category.code')
+                TextColumn::make('category.code')
                     ->label('Kategori')
                     ->badge()
                     ->color('primary')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('category.name')
+                TextColumn::make('category.name')
                     ->label('Nama Kategori')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Jenis Pelanggaran')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('points')
+                TextColumn::make('points')
                     ->label('Poin')
                     ->badge()
                     ->color(fn ($state) => $state >= 50 ? 'danger' : ($state >= 25 ? 'warning' : 'success'))
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_custom')
+                IconColumn::make('is_custom')
                     ->label('Custom')
                     ->boolean()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('violations_count')
+                TextColumn::make('violations_count')
                     ->label('Jumlah Kasus')
                     ->counts('violations')
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('violation_category_id')
+                SelectFilter::make('violation_category_id')
                     ->label('Kategori')
                     ->options(ViolationCategory::pluck('name', 'id'))
                     ->searchable()
                     ->preload(),
-                Tables\Filters\TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Status Aktif')
                     ->placeholder('Semua')
                     ->trueLabel('Aktif')
                     ->falseLabel('Tidak Aktif'),
-                Tables\Filters\TernaryFilter::make('is_custom')
+                TernaryFilter::make('is_custom')
                     ->label('Custom Poin')
                     ->placeholder('Semua')
                     ->trueLabel('Ya')
                     ->falseLabel('Tidak'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

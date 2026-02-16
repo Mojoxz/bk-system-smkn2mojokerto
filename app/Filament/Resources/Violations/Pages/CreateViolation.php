@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ViolationResource\Pages;
 use App\Filament\Resources\ViolationResource;
 use App\Services\ViolationService;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateViolation extends CreateRecord
 {
@@ -17,9 +18,14 @@ class CreateViolation extends CreateRecord
         return $data;
     }
 
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         $service = new ViolationService();
         return $service->createViolation($data);
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

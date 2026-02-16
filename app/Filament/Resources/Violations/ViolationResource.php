@@ -7,12 +7,26 @@ use App\Models\Violation;
 use App\Models\Student;
 use App\Models\ViolationType;
 use App\Services\ViolationService;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Schemas\Schema;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ViolationsExport;
 
@@ -28,13 +42,13 @@ class ViolationResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Data Pelanggaran')
+        return $schema
+            ->components([
+                Section::make('Data Pelanggaran')
                     ->schema([
-                        Forms\Components\Select::make('student_id')
+                        Select::make('student_id')
                             ->label('Siswa')
                             ->options(Student::where('is_active', true)->pluck('name', 'id'))
                             ->required()
@@ -43,7 +57,7 @@ class ViolationResource extends Resource
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} - {$record->nisn} ({$record->class})")
                             ->columnSpanFull(),
 
-                        Forms\Components\Select::make('violation_type_id')
+                        Select::make('violation_type_id')
                             ->label('Jenis Pelanggaran')
                             ->options(ViolationType::with('category')->get()->mapWithKeys(function ($type) {
                                 return [$type->id => "{$type->category->code} - {$type->name} ({$type->points} poin)"];
@@ -60,13 +74,13 @@ class ViolationResource extends Resource
                             })
                             ->columnSpanFull(),
 
-                        Forms\Components\DateTimePicker::make('violation_date')
+                        DateTimePicker::make('violation_date')
                             ->label('Tanggal & Waktu Pelanggaran')
                             ->required()
                             ->default(now())
                             ->native(false),
 
-                        Forms\Components\TextInput::make('points')
+                        TextInput::make('points')
                             ->label('Poin')
                             ->numeric()
                             ->required()
@@ -74,12 +88,12 @@ class ViolationResource extends Resource
                             ->disabled(fn (callable $get) => !$get('violation_type_id') || !ViolationType::find($get('violation_type_id'))?->is_custom)
                             ->helperText('Poin otomatis terisi. Hanya dapat diubah jika jenis pelanggaran mengizinkan custom poin'),
 
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Keterangan')
                             ->rows(3)
                             ->columnSpanFull(),
 
-                        Forms\Components\FileUpload::make('photo_evidence')
+                        FileUpload::make('photo_evidence')
                             ->label('Bukti Foto')
                             ->image()
                             ->directory('violations/photos')
@@ -87,7 +101,7 @@ class ViolationResource extends Resource
                             ->maxSize(2048)
                             ->columnSpanFull(),
 
-                        Forms\Components\FileUpload::make('signature')
+                        FileUpload::make('signature')
                             ->label('Tanda Tangan')
                             ->image()
                             ->directory('violations/signatures')
@@ -96,9 +110,9 @@ class ViolationResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Status & Catatan')
+                Section::make('Status & Catatan')
                     ->schema([
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label('Status')
                             ->options([
                                 'pending' => 'Pending',
@@ -108,7 +122,7 @@ class ViolationResource extends Resource
                             ->required()
                             ->default('pending'),
 
-                        Forms\Components\Textarea::make('notes')
+                        Textarea::make('notes')
                             ->label('Catatan Admin')
                             ->rows(3)
                             ->columnSpanFull(),
@@ -120,45 +134,45 @@ class ViolationResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('violation_date')
+                TextColumn::make('violation_date')
                     ->label('Tanggal')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('student.nisn')
+                TextColumn::make('student.nisn')
                     ->label('NISN')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('student.name')
+                TextColumn::make('student.name')
                     ->label('Nama Siswa')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('student.class')
+                TextColumn::make('student.class')
                     ->label('Kelas')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('violationType.category.code')
+                TextColumn::make('violationType.category.code')
                     ->label('Kategori')
                     ->badge()
                     ->color('primary')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('violationType.name')
+                TextColumn::make('violationType.name')
                     ->label('Jenis Pelanggaran')
                     ->searchable()
                     ->limit(30),
 
-                Tables\Columns\TextColumn::make('points')
+                TextColumn::make('points')
                     ->label('Poin')
                     ->badge()
                     ->color(fn ($state) => $state >= 50 ? 'danger' : ($state >= 25 ? 'warning' : 'success'))
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('status')
+                BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
                         'warning' => 'pending',
@@ -172,13 +186,13 @@ class ViolationResource extends Resource
                     })
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('admin.name')
+                TextColumn::make('admin.name')
                     ->label('Dicatat Oleh')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->label('Status')
                     ->options([
                         'pending' => 'Pending',
@@ -186,17 +200,17 @@ class ViolationResource extends Resource
                         'rejected' => 'Ditolak',
                     ]),
 
-                Tables\Filters\SelectFilter::make('violation_category')
+                SelectFilter::make('violation_category')
                     ->label('Kategori')
                     ->relationship('violationType.category', 'name')
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\Filter::make('violation_date')
+                Filter::make('violation_date')
                     ->form([
-                        Forms\Components\DatePicker::make('date_from')
+                        DatePicker::make('date_from')
                             ->label('Dari Tanggal'),
-                        Forms\Components\DatePicker::make('date_to')
+                        DatePicker::make('date_to')
                             ->label('Sampai Tanggal'),
                     ])
                     ->query(function ($query, array $data) {
@@ -206,8 +220,8 @@ class ViolationResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
 
                 Action::make('approve')
                     ->label('Setujui')
@@ -230,7 +244,7 @@ class ViolationResource extends Resource
                     ->requiresConfirmation()
                     ->visible(fn (Violation $record) => $record->status === 'pending')
                     ->form([
-                        Forms\Components\Textarea::make('notes')
+                        Textarea::make('notes')
                             ->label('Alasan Penolakan')
                             ->required(),
                     ])
@@ -242,11 +256,11 @@ class ViolationResource extends Resource
                             ->send();
                     }),
 
-                Tables\Actions\DeleteAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->headerActions([
@@ -254,7 +268,7 @@ class ViolationResource extends Resource
                     ->label('Export Excel')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->form([
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label('Status')
                             ->options([
                                 'pending' => 'Pending',
@@ -263,10 +277,10 @@ class ViolationResource extends Resource
                             ])
                             ->placeholder('Semua Status'),
 
-                        Forms\Components\DatePicker::make('date_from')
+                        DatePicker::make('date_from')
                             ->label('Dari Tanggal'),
 
-                        Forms\Components\DatePicker::make('date_to')
+                        DatePicker::make('date_to')
                             ->label('Sampai Tanggal'),
                     ])
                     ->action(function (array $data) {

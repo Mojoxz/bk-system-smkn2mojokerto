@@ -5,6 +5,7 @@ namespace App\Filament\Resources\NewsResource\Pages;
 use App\Filament\Resources\NewsResource;
 use App\Services\NewsService;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateNews extends CreateRecord
 {
@@ -17,9 +18,14 @@ class CreateNews extends CreateRecord
         return $data;
     }
 
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         $service = new NewsService();
         return $service->createNews($data);
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

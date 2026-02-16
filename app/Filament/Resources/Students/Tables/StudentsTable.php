@@ -2,11 +2,15 @@
 
 namespace App\Filament\Resources\Students\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use App\Models\Student;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class StudentsTable
@@ -16,41 +20,68 @@ class StudentsTable
         return $table
             ->columns([
                 TextColumn::make('nisn')
-                    ->searchable(),
+                    ->label('NISN')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Nama')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('class')
-                    ->searchable(),
+                    ->label('Kelas')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('absen')
+                    ->label('Absen')
                     ->searchable(),
                 TextColumn::make('username')
-                    ->searchable(),
+                    ->label('Username')
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('phone')
-                    ->searchable(),
+                    ->label('Telepon')
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('total_points')
+                    ->label('Total Poin')
                     ->numeric()
+                    ->badge()
+                    ->color(fn ($state) => $state >= 100 ? 'danger' : ($state >= 50 ? 'warning' : 'success'))
                     ->sortable(),
                 IconColumn::make('is_active')
-                    ->boolean(),
+                    ->label('Status')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Diupdate')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('class')
+                    ->label('Kelas')
+                    ->options(fn () => Student::distinct()->pluck('class', 'class')->toArray()),
+                TernaryFilter::make('is_active')
+                    ->label('Status Aktif')
+                    ->placeholder('Semua')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Tidak Aktif'),
             ])
-            ->recordActions([
+            ->actions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 }

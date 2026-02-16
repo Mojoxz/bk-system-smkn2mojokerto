@@ -5,13 +5,25 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StudentResource\Pages;
 use App\Models\Student;
 use App\Services\StudentService;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
-use Filament\Tables\Actions\Action;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentsExport;
 
@@ -27,47 +39,47 @@ class StudentResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Data Siswa')
+        return $schema
+            ->components([
+                Section::make('Data Siswa')
                     ->schema([
-                        Forms\Components\TextInput::make('nisn')
+                        TextInput::make('nisn')
                             ->label('NISN')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Lengkap')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('class')
+                        TextInput::make('class')
                             ->label('Kelas')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('absen')
+                        TextInput::make('absen')
                             ->label('Nomor Absen')
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('phone')
+                        TextInput::make('phone')
                             ->label('Nomor Telepon')
                             ->tel()
                             ->maxLength(255),
-                        Forms\Components\Textarea::make('address')
+                        Textarea::make('address')
                             ->label('Alamat')
                             ->rows(3)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Akun Login')
+                Section::make('Akun Login')
                     ->schema([
-                        Forms\Components\TextInput::make('username')
+                        TextInput::make('username')
                             ->label('Username')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('password')
+                        TextInput::make('password')
                             ->label('Password')
                             ->password()
                             ->dehydrateStateUsing(fn ($state) => !empty($state) ? Hash::make($state) : null)
@@ -75,7 +87,7 @@ class StudentResource extends Resource
                             ->required(fn (string $context): bool => $context === 'create')
                             ->maxLength(255)
                             ->helperText('Kosongkan jika tidak ingin mengubah password'),
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
                             ->required(),
@@ -88,53 +100,53 @@ class StudentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nisn')
+                TextColumn::make('nisn')
                     ->label('NISN')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('class')
+                TextColumn::make('class')
                     ->label('Kelas')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('absen')
+                TextColumn::make('absen')
                     ->label('Absen')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('total_points')
+                TextColumn::make('total_points')
                     ->label('Total Poin')
                     ->badge()
                     ->color(fn ($state) => $state >= 100 ? 'danger' : ($state >= 50 ? 'warning' : 'success'))
                     ->sortable(),
-                Tables\Columns\TextColumn::make('violations_count')
+                TextColumn::make('violations_count')
                     ->label('Pelanggaran')
                     ->counts('violations')
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('class')
+                SelectFilter::make('class')
                     ->label('Kelas')
                     ->options(fn () => Student::distinct()->pluck('class', 'class')->toArray()),
-                Tables\Filters\TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Status Aktif')
                     ->placeholder('Semua')
                     ->trueLabel('Aktif')
                     ->falseLabel('Tidak Aktif'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->headerActions([
@@ -142,7 +154,7 @@ class StudentResource extends Resource
                     ->label('Import Excel')
                     ->icon('heroicon-o-arrow-up-tray')
                     ->form([
-                        Forms\Components\FileUpload::make('file')
+                        FileUpload::make('file')
                             ->label('File Excel')
                             ->acceptedFileTypes(['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
                             ->required(),

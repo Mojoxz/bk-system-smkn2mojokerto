@@ -3,46 +3,71 @@
 namespace App\Filament\Resources\StudentResource\Pages;
 
 use App\Filament\Resources\StudentResource;
+use Filament\Actions;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
 
 class ViewStudent extends ViewRecord
 {
     protected static string $resource = StudentResource::class;
 
-    public function infolist(Infolist $infolist): Infolist
+    protected function getHeaderActions(): array
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Data Siswa')
+        return [
+            Actions\EditAction::make(),
+            Actions\DeleteAction::make(),
+        ];
+    }
+
+    public function infolist(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make('Data Siswa')
                     ->schema([
-                        Infolists\Components\TextEntry::make('nisn')->label('NISN'),
-                        Infolists\Components\TextEntry::make('name')->label('Nama'),
-                        Infolists\Components\TextEntry::make('class')->label('Kelas'),
-                        Infolists\Components\TextEntry::make('absen')->label('Absen'),
-                        Infolists\Components\TextEntry::make('phone')->label('Telepon'),
-                        Infolists\Components\TextEntry::make('username')->label('Username'),
-                        Infolists\Components\TextEntry::make('address')->label('Alamat')->columnSpanFull(),
+                        TextEntry::make('nisn')->label('NISN'),
+                        TextEntry::make('name')->label('Nama'),
+                        TextEntry::make('class')->label('Kelas'),
+                        TextEntry::make('absen')->label('Absen'),
+                        TextEntry::make('phone')->label('Telepon'),
+                        TextEntry::make('username')->label('Username'),
+                        TextEntry::make('address')->label('Alamat')->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Infolists\Components\Section::make('Statistik Pelanggaran')
+                Section::make('Status Akun')
                     ->schema([
-                        Infolists\Components\TextEntry::make('total_points')
+                        IconEntry::make('is_active')
+                            ->label('Status Aktif')
+                            ->boolean(),
+                        TextEntry::make('created_at')
+                            ->label('Dibuat Pada')
+                            ->dateTime('d/m/Y H:i'),
+                        TextEntry::make('updated_at')
+                            ->label('Diupdate Pada')
+                            ->dateTime('d/m/Y H:i'),
+                    ])
+                    ->columns(3),
+
+                Section::make('Statistik Pelanggaran')
+                    ->schema([
+                        TextEntry::make('total_points')
                             ->label('Total Poin')
                             ->badge()
                             ->color(fn ($state) => $state >= 100 ? 'danger' : ($state >= 50 ? 'warning' : 'success')),
 
-                        Infolists\Components\TextEntry::make('violations_count')
+                        TextEntry::make('violations_count')
                             ->label('Total Pelanggaran')
                             ->state(fn ($record) => $record->violations()->count()),
 
-                        Infolists\Components\TextEntry::make('approved_violations_count')
+                        TextEntry::make('approved_violations_count')
                             ->label('Pelanggaran Disetujui')
                             ->state(fn ($record) => $record->violations()->where('status', 'approved')->count()),
 
-                        Infolists\Components\TextEntry::make('pending_violations_count')
+                        TextEntry::make('pending_violations_count')
                             ->label('Pelanggaran Pending')
                             ->state(fn ($record) => $record->violations()->where('status', 'pending')->count()),
                     ])

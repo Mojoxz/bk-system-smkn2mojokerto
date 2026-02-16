@@ -4,10 +4,19 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ViolationCategoryResource\Pages;
 use App\Models\ViolationCategory;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class ViolationCategoryResource extends Resource
@@ -22,34 +31,34 @@ class ViolationCategoryResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\TextInput::make('code')
+                        TextInput::make('code')
                             ->label('Kode Kategori')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->placeholder('A, B, C')
                             ->helperText('Contoh: A, B, C'),
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Kategori')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('KERAJINAN, KERAPIAN, SIKAP PERILAKU'),
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Deskripsi')
                             ->rows(3)
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('order')
+                        TextInput::make('order')
                             ->label('Urutan')
                             ->numeric()
                             ->default(0)
                             ->required(),
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
                             ->required(),
@@ -62,46 +71,46 @@ class ViolationCategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('code')
+                TextColumn::make('code')
                     ->label('Kode')
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('primary'),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nama Kategori')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('description')
+                TextColumn::make('description')
                     ->label('Deskripsi')
                     ->limit(50)
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('violation_types_count')
+                TextColumn::make('violation_types_count')
                     ->label('Jumlah Jenis')
                     ->counts('violationTypes')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('order')
+                TextColumn::make('order')
                     ->label('Urutan')
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Status Aktif')
                     ->placeholder('Semua')
                     ->trueLabel('Aktif')
                     ->falseLabel('Tidak Aktif'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('order');

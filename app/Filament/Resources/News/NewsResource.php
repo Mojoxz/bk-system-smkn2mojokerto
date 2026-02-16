@@ -4,10 +4,25 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NewsResource\Pages;
 use App\Models\News;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 
@@ -23,27 +38,27 @@ class NewsResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Informasi Berita')
+        return $schema
+            ->components([
+                Section::make('Informasi Berita')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
+                        TextInput::make('title')
                             ->label('Judul Berita')
                             ->required()
                             ->maxLength(255)
                             ->reactive()
                             ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
 
-                        Forms\Components\TextInput::make('slug')
+                        TextInput::make('slug')
                             ->label('Slug')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('URL friendly version of title'),
 
-                        Forms\Components\FileUpload::make('image')
+                        FileUpload::make('image')
                             ->label('Gambar Berita')
                             ->image()
                             ->directory('news')
@@ -51,7 +66,7 @@ class NewsResource extends Resource
                             ->maxSize(2048)
                             ->columnSpanFull(),
 
-                        Forms\Components\RichEditor::make('content')
+                        RichEditor::make('content')
                             ->label('Konten Berita')
                             ->required()
                             ->columnSpanFull()
@@ -60,14 +75,14 @@ class NewsResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Publikasi')
+                Section::make('Publikasi')
                     ->schema([
-                        Forms\Components\Toggle::make('is_published')
+                        Toggle::make('is_published')
                             ->label('Publikasikan')
                             ->default(false)
                             ->reactive(),
 
-                        Forms\Components\DateTimePicker::make('published_at')
+                        DateTimePicker::make('published_at')
                             ->label('Tanggal Publikasi')
                             ->native(false)
                             ->visible(fn (callable $get) => $get('is_published'))
@@ -81,57 +96,57 @@ class NewsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
+                ImageColumn::make('image')
                     ->label('Gambar')
                     ->circular(),
 
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()
                     ->sortable()
                     ->limit(50),
 
-                Tables\Columns\TextColumn::make('admin.name')
+                TextColumn::make('admin.name')
                     ->label('Penulis')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\IconColumn::make('is_published')
+                IconColumn::make('is_published')
                     ->label('Dipublikasi')
                     ->boolean()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('published_at')
+                TextColumn::make('published_at')
                     ->label('Tanggal Publikasi')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('views')
+                TextColumn::make('views')
                     ->label('Dilihat')
                     ->sortable()
                     ->badge()
                     ->color('success'),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_published')
+                TernaryFilter::make('is_published')
                     ->label('Status Publikasi')
                     ->placeholder('Semua')
                     ->trueLabel('Dipublikasi')
                     ->falseLabel('Draft'),
 
-                Tables\Filters\Filter::make('published_date')
+                Filter::make('published_date')
                     ->form([
-                        Forms\Components\DatePicker::make('published_from')
+                        DatePicker::make('published_from')
                             ->label('Dari Tanggal'),
-                        Forms\Components\DatePicker::make('published_until')
+                        DatePicker::make('published_until')
                             ->label('Sampai Tanggal'),
                     ])
                     ->query(function ($query, array $data) {
@@ -141,13 +156,13 @@ class NewsResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
