@@ -5,15 +5,15 @@ namespace App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
 
 class ViewStudent extends ViewRecord
 {
     protected static string $resource = StudentResource::class;
 
-    public function infolist(Infolist $infolist): Infolist
+    public function infolist(Schema $schema): Schema
     {
-        return $infolist
+        return $schema
             ->schema([
                 Infolists\Components\Group::make([
                     Infolists\Components\TextEntry::make('nisn')->label('NISN'),

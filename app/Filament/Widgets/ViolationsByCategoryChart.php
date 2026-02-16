@@ -8,7 +8,7 @@ use Filament\Widgets\ChartWidget;
 
 class ViolationsByCategoryChart extends ChartWidget
 {
-    protected static ?string $heading = 'Pelanggaran per Kategori';
+    protected  ?string $heading = 'Pelanggaran per Kategori';
 
     protected static ?int $sort = 2;
 

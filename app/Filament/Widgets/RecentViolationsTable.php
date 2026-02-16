@@ -17,7 +17,7 @@ class RecentViolationsTable extends BaseWidget
     {
         return $table
             ->query(
-                Violation::query()
+                fn () => Violation::query()
                     ->with(['student', 'violationType.category'])
                     ->latest()
                     ->limit(10)

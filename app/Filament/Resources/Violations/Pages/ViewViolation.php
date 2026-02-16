@@ -5,15 +5,15 @@ namespace App\Filament\Resources\ViolationResource\Pages;
 use App\Filament\Resources\ViolationResource;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
 
 class ViewViolation extends ViewRecord
 {
     protected static string $resource = ViolationResource::class;
 
-    public function infolist(Infolist $infolist): Infolist
+    public function infolist(Schema $schema): Schema
     {
-        return $infolist
+        return $schema
             ->schema([
                 Infolists\Components\Section::make('Data Siswa')
                     ->schema([
