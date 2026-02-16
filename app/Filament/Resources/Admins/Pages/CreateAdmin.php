@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Admins\Pages;
+namespace App\Filament\Resources\AdminResource\Pages;
 
-use App\Filament\Resources\Admins\AdminResource;
+use App\Filament\Resources\AdminResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateAdmin extends CreateRecord

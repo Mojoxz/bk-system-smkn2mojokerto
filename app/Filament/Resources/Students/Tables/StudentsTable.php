@@ -1,12 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Students\Tables;
+namespace App\Filament\Resources\StudentResource\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables;
 use Filament\Tables\Table;
 
 class StudentsTable
@@ -15,28 +11,28 @@ class StudentsTable
     {
         return $table
             ->columns([
-                TextColumn::make('nisn')
+                Tables\Columns\TextColumn::make('nisn')
                     ->searchable(),
-                TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('class')
+                Tables\Columns\TextColumn::make('class')
                     ->searchable(),
-                TextColumn::make('absen')
+                Tables\Columns\TextColumn::make('absen')
                     ->searchable(),
-                TextColumn::make('username')
+                Tables\Columns\TextColumn::make('username')
                     ->searchable(),
-                TextColumn::make('phone')
+                Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
-                TextColumn::make('total_points')
+                Tables\Columns\TextColumn::make('total_points')
                     ->numeric()
                     ->sortable(),
-                IconColumn::make('is_active')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
-                TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -44,12 +40,12 @@ class StudentsTable
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make(),
+            ->actions([
+                Tables\Actions\EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

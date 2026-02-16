@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\ViolationCategories\Pages;
+namespace App\Filament\Resources\ViolationCategoryResource\Pages;
 
-use App\Filament\Resources\ViolationCategories\ViolationCategoryResource;
+use App\Filament\Resources\ViolationCategoryResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 

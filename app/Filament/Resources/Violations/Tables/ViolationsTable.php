@@ -1,11 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Violations\Tables;
+namespace App\Filament\Resources\ViolationResource\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables;
 use Filament\Tables\Table;
 
 class ViolationsTable
@@ -14,31 +11,31 @@ class ViolationsTable
     {
         return $table
             ->columns([
-                TextColumn::make('student_id')
+                Tables\Columns\TextColumn::make('student_id')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('violation_type_id')
+                Tables\Columns\TextColumn::make('violation_type_id')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('admin_id')
+                Tables\Columns\TextColumn::make('admin_id')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('points')
+                Tables\Columns\TextColumn::make('points')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('photo_evidence')
+                Tables\Columns\TextColumn::make('photo_evidence')
                     ->searchable(),
-                TextColumn::make('signature')
+                Tables\Columns\TextColumn::make('signature')
                     ->searchable(),
-                TextColumn::make('violation_date')
+                Tables\Columns\TextColumn::make('violation_date')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('status'),
-                TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -46,12 +43,12 @@ class ViolationsTable
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make(),
+            ->actions([
+                Tables\Actions\EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

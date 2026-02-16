@@ -1,12 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\ViolationCategories\Tables;
+namespace App\Filament\Resources\ViolationCategoryResource\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables;
 use Filament\Tables\Table;
 
 class ViolationCategoriesTable
@@ -15,20 +11,20 @@ class ViolationCategoriesTable
     {
         return $table
             ->columns([
-                TextColumn::make('code')
+                Tables\Columns\TextColumn::make('code')
                     ->searchable(),
-                TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('order')
+                Tables\Columns\TextColumn::make('order')
                     ->numeric()
                     ->sortable(),
-                IconColumn::make('is_active')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
-                TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -36,12 +32,12 @@ class ViolationCategoriesTable
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make(),
+            ->actions([
+                Tables\Actions\EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

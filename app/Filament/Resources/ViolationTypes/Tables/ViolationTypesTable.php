@@ -1,12 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\ViolationTypes\Tables;
+namespace App\Filament\Resources\ViolationTypeResource\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables;
 use Filament\Tables\Table;
 
 class ViolationTypesTable
@@ -15,23 +11,23 @@ class ViolationTypesTable
     {
         return $table
             ->columns([
-                TextColumn::make('violation_category_id')
+                Tables\Columns\TextColumn::make('violation_category_id')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('points')
+                Tables\Columns\TextColumn::make('points')
                     ->numeric()
                     ->sortable(),
-                IconColumn::make('is_custom')
+                Tables\Columns\IconColumn::make('is_custom')
                     ->boolean(),
-                IconColumn::make('is_active')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
-                TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -39,12 +35,12 @@ class ViolationTypesTable
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make(),
+            ->actions([
+                Tables\Actions\EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

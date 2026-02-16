@@ -14,7 +14,7 @@ class StudentSeeder extends Seeder
 
         for ($i = 1; $i <= 20; $i++) {
             Student::create([
-                'nisn' => '000000000' . str_pad($i, 4, '0', STR_PAD_LEFT),
+                'nisn' => '000000003' . str_pad($i, 4, '0', STR_PAD_LEFT),
                 'name' => 'Siswa ' . $i,
                 'class' => $classes[array_rand($classes)],
                 'absen' => str_pad($i % 36 + 1, 2, '0', STR_PAD_LEFT),

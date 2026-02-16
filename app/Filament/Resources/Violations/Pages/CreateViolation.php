@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Violations\Pages;
+namespace App\Filament\Resources\ViolationResource\Pages;
 
-use App\Filament\Resources\Violations\ViolationResource;
+use App\Filament\Resources\ViolationResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateViolation extends CreateRecord

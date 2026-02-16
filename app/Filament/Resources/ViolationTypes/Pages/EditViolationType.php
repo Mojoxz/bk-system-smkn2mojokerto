@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\ViolationTypes\Pages;
+namespace App\Filament\Resources\ViolationTypeResource\Pages;
 
-use App\Filament\Resources\ViolationTypes\ViolationTypeResource;
+use App\Filament\Resources\ViolationTypeResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 

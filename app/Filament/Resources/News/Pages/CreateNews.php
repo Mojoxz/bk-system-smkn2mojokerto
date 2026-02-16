@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\News\Pages;
+namespace App\Filament\Resources\NewsResource\Pages;
 
-use App\Filament\Resources\News\NewsResource;
+use App\Filament\Resources\NewsResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateNews extends CreateRecord

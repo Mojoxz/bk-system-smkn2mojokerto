@@ -1,13 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\News\Tables;
+namespace App\Filament\Resources\NewsResource\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables;
 use Filament\Tables\Table;
 
 class NewsTable
@@ -16,27 +11,27 @@ class NewsTable
     {
         return $table
             ->columns([
-                TextColumn::make('admin_id')
+                Tables\Columns\TextColumn::make('admin_id')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('title')
+                Tables\Columns\TextColumn::make('title')
                     ->searchable(),
-                TextColumn::make('slug')
+                Tables\Columns\TextColumn::make('slug')
                     ->searchable(),
-                ImageColumn::make('image'),
-                IconColumn::make('is_published')
+                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\IconColumn::make('is_published')
                     ->boolean(),
-                TextColumn::make('published_at')
+                Tables\Columns\TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('views')
+                Tables\Columns\TextColumn::make('views')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -44,12 +39,12 @@ class NewsTable
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make(),
+            ->actions([
+                Tables\Actions\EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
