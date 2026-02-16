@@ -7,8 +7,17 @@ use App\Models\Admin;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Illuminate\Support\Facades\Hash;
 
 class AdminResource extends Resource
@@ -39,37 +48,37 @@ class AdminResource extends Resource
     {
         return $schema
             ->schema([
-                Forms\Components\Section::make('Informasi Admin')
+                Section::make('Informasi Admin')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Lengkap')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('nipd')
+                        TextInput::make('nipd')
                             ->label('NIPD')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('email')
+                        TextInput::make('email')
                             ->label('Email')
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('phone')
+                        TextInput::make('phone')
                             ->label('Nomor Telepon')
                             ->tel()
                             ->maxLength(255),
-                        Forms\Components\Textarea::make('address')
+                        Textarea::make('address')
                             ->label('Alamat')
                             ->rows(3)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Akun & Keamanan')
+                Section::make('Akun & Keamanan')
                     ->schema([
-                        Forms\Components\Select::make('role')
+                        Select::make('role')
                             ->label('Role')
                             ->options([
                                 'super_admin' => 'Super Admin',
@@ -77,14 +86,14 @@ class AdminResource extends Resource
                             ])
                             ->required()
                             ->default('admin'),
-                        Forms\Components\TextInput::make('password')
+                        TextInput::make('password')
                             ->label('Password')
                             ->password()
                             ->dehydrateStateUsing(fn ($state) => !empty($state) ? Hash::make($state) : null)
                             ->dehydrated(fn ($state) => filled($state))
                             ->required(fn (string $context): bool => $context === 'create')
                             ->maxLength(255),
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
                             ->required(),
@@ -149,12 +158,12 @@ class AdminResource extends Resource
                     ->falseLabel('Tidak Aktif'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

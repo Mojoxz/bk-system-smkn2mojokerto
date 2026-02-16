@@ -6,12 +6,23 @@ use App\Filament\Resources\StudentResource\Pages;
 use App\Models\Student;
 use App\Services\StudentService;
 use Filament\Forms;
+
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Illuminate\Support\Facades\Hash;
-use Filament\Tables\Actions\Action;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentsExport;
 
@@ -43,43 +54,43 @@ class StudentResource extends Resource
     {
         return $schema
             ->schema([
-                Forms\Components\Section::make('Data Siswa')
+                Section::make('Data Siswa')
                     ->schema([
-                        Forms\Components\TextInput::make('nisn')
+                        TextInput::make('nisn')
                             ->label('NISN')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Lengkap')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('class')
+                        TextInput::make('class')
                             ->label('Kelas')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('absen')
+                        TextInput::make('absen')
                             ->label('Nomor Absen')
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('phone')
+                        TextInput::make('phone')
                             ->label('Nomor Telepon')
                             ->tel()
                             ->maxLength(255),
-                        Forms\Components\Textarea::make('address')
+                        Textarea::make('address')
                             ->label('Alamat')
                             ->rows(3)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Akun Login')
+                Section::make('Akun Login')
                     ->schema([
-                        Forms\Components\TextInput::make('username')
+                        TextInput::make('username')
                             ->label('Username')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('password')
+                        TextInput::make('password')
                             ->label('Password')
                             ->password()
                             ->dehydrateStateUsing(fn ($state) => !empty($state) ? Hash::make($state) : null)
@@ -87,7 +98,7 @@ class StudentResource extends Resource
                             ->required(fn (string $context): bool => $context === 'create')
                             ->maxLength(255)
                             ->helperText('Kosongkan jika tidak ingin mengubah password'),
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
                             ->required(),
@@ -140,13 +151,13 @@ class StudentResource extends Resource
                     ->falseLabel('Tidak Aktif'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->headerActions([
@@ -154,7 +165,7 @@ class StudentResource extends Resource
                     ->label('Import Excel')
                     ->icon('heroicon-o-arrow-up-tray')
                     ->form([
-                        Forms\Components\FileUpload::make('file')
+                        FileUpload::make('file')
                             ->label('File Excel')
                             ->acceptedFileTypes(['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
                             ->required(),

@@ -1,0 +1,39 @@
+Membuat website manajemen point BK SMKN NEGRI 2 MOJOKERTO, menggunakan Laravel 12 dan Filament 4 menggunakan tailwind css. buatkan backendnya dulu saja front end seadanya. dan jangan menumpuk semua di controller, pisahkan seperti service dll. buatkan dari awal mulai dari instalasi hingga selesai, dan berikan file nya secara berurutan mulai dari awal hingga akhir. dan saya menggunakan windows + laragon
+
+
+
+requirement admin =
+
+1. jenis point = anak terlambat, dll nanti bisa di seeder lewat Laravel agar lebih cepat jadi nanti jika ditekan dropdown bisa langsung ke count poin nya.
+
+2. isi untuk telat (Nama, Kelas, Keterangan, Tanda Tangan, Bukti berupa foto)
+
+3. ada juga jika pilihan lain atau opsional. nanti untuk point bisa mengisi sendiri. -> jadi bisa CRUD seperti catatan lalu pointnya bagaimana.
+
+4. nanti di landing ada berita yang bisa di CRUD.
+
+5. Upload atau CRUD nisn, Nama, Kelas, Absen, Password dan username. menggunakan excel
+
+6. penampilan data sesuai dengan kategori pelanggaran A.KERAJINAN, B.KERAPIAN, C.SIKAP PERILAKU. nah ini nanti gabung dengan nomor 1 jadi ada kategorinya
+
+7. admin bisa banyak admin yang mengakses sesuai dengan nama guru, nipd, alamat dsb. jadi bisa CRUD Admin
+
+8. untuk hasil yang masuk semua bisa dilihat di akses cepat dashboard dan ada diagram.
+
+9. Pemantauan data nantinya akan ada export ke excel semua.
+
+10. per side bar ada seperti pengelolaan pelanggaran lalu drop down. lihat data murid dropdown dsb. 
+
+
+
+requirement user =
+
+1. untuk user (murid) mungkin langsung ke page awal mengisi form yang akan diisi telat dsb sesauai dengan pelanggaran mereka
+
+2. login sesuai dengan nisn, Nama, Kelas.
+
+3. Profil Edit user. beri file nya 1 per 1 dan jika ada sebuah command atau syntax bisa dimasukkan. seperti breeze dsb
+
+
+
+membuat dropdown kelas jurusan dan rombel pada students
