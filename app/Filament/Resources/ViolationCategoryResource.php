@@ -5,10 +5,19 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ViolationCategoryResource\Pages;
 use App\Models\ViolationCategory;
 use Filament\Forms;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+
 
 class ViolationCategoryResource extends Resource
 {
@@ -38,30 +47,30 @@ class ViolationCategoryResource extends Resource
     {
         return $schema
             ->schema([
-                Forms\Components\Section::make()
+                Section::make()
                     ->schema([
-                        Forms\Components\TextInput::make('code')
+                        TextInput::make('code')
                             ->label('Kode Kategori')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->placeholder('A, B, C')
                             ->helperText('Contoh: A, B, C'),
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Kategori')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('KERAJINAN, KERAPIAN, SIKAP PERILAKU'),
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Deskripsi')
                             ->rows(3)
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('order')
+                        TextInput::make('order')
                             ->label('Urutan')
                             ->numeric()
                             ->default(0)
                             ->required(),
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
                             ->required(),
@@ -108,12 +117,12 @@ class ViolationCategoryResource extends Resource
                     ->falseLabel('Tidak Aktif'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('order');

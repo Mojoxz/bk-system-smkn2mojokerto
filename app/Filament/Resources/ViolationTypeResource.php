@@ -5,11 +5,19 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ViolationTypeResource\Pages;
 use App\Models\ViolationType;
 use App\Models\ViolationCategory;
-use Filament\Forms;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 
 class ViolationTypeResource extends Resource
 {
@@ -39,35 +47,35 @@ class ViolationTypeResource extends Resource
     {
         return $schema
             ->schema([
-                Forms\Components\Section::make()
+                Section::make()
                     ->schema([
-                        Forms\Components\Select::make('violation_category_id')
+                        Select::make('violation_category_id')
                             ->label('Kategori Pelanggaran')
                             ->options(ViolationCategory::active()->ordered()->pluck('name', 'id'))
                             ->required()
                             ->searchable()
                             ->preload(),
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Jenis Pelanggaran')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('Terlambat, Tidak Mengerjakan PR, dll'),
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Deskripsi')
                             ->rows(3)
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('points')
+                        TextInput::make('points')
                             ->label('Poin')
                             ->numeric()
                             ->required()
                             ->default(0)
                             ->minValue(0)
                             ->helperText('Poin yang akan ditambahkan jika melakukan pelanggaran ini'),
-                        Forms\Components\Toggle::make('is_custom')
+                        Toggle::make('is_custom')
                             ->label('Custom Poin')
                             ->helperText('Jika diaktifkan, admin bisa input poin sendiri saat mencatat pelanggaran')
                             ->default(false),
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
                             ->required(),
@@ -131,12 +139,12 @@ class ViolationTypeResource extends Resource
                     ->falseLabel('Tidak'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

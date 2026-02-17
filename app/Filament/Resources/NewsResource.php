@@ -4,11 +4,22 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NewsResource\Pages;
 use App\Models\News;
-use Filament\Forms;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Illuminate\Support\Str;
 
 class NewsResource extends Resource
@@ -39,31 +50,31 @@ class NewsResource extends Resource
     {
         return $schema
             ->schema([
-                Forms\Components\Section::make('Informasi Berita')
+                Section::make('Informasi Berita')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
+                        TextInput::make('title')
                             ->label('Judul Berita')
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
 
-                        Forms\Components\TextInput::make('slug')
+                        TextInput::make('slug')
                             ->label('Slug')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('URL friendly version of title'),
 
-                        Forms\Components\FileUpload::make('image')
+                        FileUpload::make('image')
                             ->label('Gambar Berita')
                             ->image()
                             ->directory('news')
                             ->imageEditor()
-                            ->maxSize(2048)
+                            ->maxSize(4096)
                             ->columnSpanFull(),
 
-                        Forms\Components\RichEditor::make('content')
+                        RichEditor::make('content')
                             ->label('Konten Berita')
                             ->required()
                             ->columnSpanFull()
@@ -72,14 +83,14 @@ class NewsResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Publikasi')
+                Section::make('Publikasi')
                     ->schema([
-                        Forms\Components\Toggle::make('is_published')
+                        Toggle::make('is_published')
                             ->label('Publikasikan')
                             ->default(false)
                             ->live(),
 
-                        Forms\Components\DateTimePicker::make('published_at')
+                        DateTimePicker::make('published_at')
                             ->label('Tanggal Publikasi')
                             ->native(false)
                             ->visible(fn (callable $get) => $get('is_published'))
@@ -141,9 +152,9 @@ class NewsResource extends Resource
 
                 Tables\Filters\Filter::make('published_date')
                     ->form([
-                        Forms\Components\DatePicker::make('published_from')
+                        DatePicker::make('published_from')
                             ->label('Dari Tanggal'),
-                        Forms\Components\DatePicker::make('published_until')
+                        DatePicker::make('published_until')
                             ->label('Sampai Tanggal'),
                     ])
                     ->query(function ($query, array $data) {
@@ -153,13 +164,13 @@ class NewsResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

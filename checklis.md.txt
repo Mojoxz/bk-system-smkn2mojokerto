@@ -22,7 +22,7 @@ requirement admin =
 
 9. Pemantauan data nantinya akan ada export ke excel semua.
 
-10. per side bar ada seperti pengelolaan pelanggaran lalu drop down. lihat data murid dropdown dsb. 
+10. per side bar ada seperti pengelolaan pelanggaran lalu drop down. lihat data murid dropdown dsb.
 
 
 
@@ -37,3 +37,5 @@ requirement user =
 
 
 membuat dropdown kelas jurusan dan rombel pada students
+masih ada error di gambar tidak bisa ngefetch
+masih ada error di bagian point yang custom harusnya ada fetch sendiri
