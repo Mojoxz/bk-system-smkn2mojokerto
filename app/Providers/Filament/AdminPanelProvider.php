@@ -10,6 +10,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Support\Facades\Blade;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -54,6 +56,27 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => Blade::render("
+                    <script src=\"https://cdn.jsdelivr.net/npm/sweetalert2@11\"></script>
+                    <script>
+                        document.addEventListener('livewire:initialized', () => {
+                            Livewire.on('show-swal', (data) => {
+                                Swal.fire({
+                                    title: data.title,
+                                    text: data.text,
+                                    icon: data.icon,
+                                    confirmButtonColor: '#4f46e5',
+                                    confirmButtonText: 'OK',
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                });
+                            });
+                        });
+                    </script>
+                ")
+            );
     }
 }

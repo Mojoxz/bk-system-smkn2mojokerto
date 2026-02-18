@@ -159,7 +159,31 @@ class AdminResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->modalHeading('Hapus Admin')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus admin ini? Tindakan ini tidak dapat dibatalkan.')
+                    ->modalSubmitActionLabel('Ya, Hapus')
+                    ->modalCancelActionLabel('Batal')
+                    ->successNotification(null)
+                    ->after(function ($livewire) {
+                        $livewire->js("
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                            script.onload = function() {
+                                Swal.fire({
+                                    title: 'Dihapus!',
+                                    text: 'Admin telah berhasil dihapus.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#4f46e5',
+                                    confirmButtonText: 'OK',
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                });
+                            };
+                            document.head.appendChild(script);
+                        ");
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

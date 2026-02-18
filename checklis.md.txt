@@ -35,7 +35,9 @@ requirement user =
 3. Profil Edit user. beri file nya 1 per 1 dan jika ada sebuah command atau syntax bisa dimasukkan. seperti breeze dsb
 
 
+REVISI =
 
+dashboard masi ada duplicate untuk dashboard biasa dan bk
 membuat dropdown kelas jurusan dan rombel pada students
-masih ada error di gambar tidak bisa ngefetch
+masih ada error di gambar tidak bisa ngefetch di tampilan beranda
 masih ada error di bagian point yang custom harusnya ada fetch sendiri
