@@ -3,10 +3,9 @@
 namespace App\Filament\Resources\StudentResource\Pages;
 
 use App\Filament\Resources\StudentResource;
-use Filament\Resources\Pages\ViewRecord;
-use Filament\Infolists;
-use Filament\Schemas\Components\Group;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema;
 
 class ViewStudent extends ViewRecord
@@ -20,7 +19,8 @@ class ViewStudent extends ViewRecord
                 Group::make([
                     TextEntry::make('nisn')->label('NISN'),
                     TextEntry::make('name')->label('Nama'),
-                    TextEntry::make('class')->label('Kelas'),
+                    TextEntry::make('classroom.name')->label('Kelas'),
+                    TextEntry::make('classroom.major.name')->label('Jurusan'),
                     TextEntry::make('absen')->label('Absen'),
                     TextEntry::make('phone')->label('Telepon'),
                     TextEntry::make('username')->label('Username'),
@@ -34,15 +34,12 @@ class ViewStudent extends ViewRecord
                             ->label('Total Poin')
                             ->badge()
                             ->color(fn ($state) => $state >= 100 ? 'danger' : ($state >= 50 ? 'warning' : 'success')),
-
                         TextEntry::make('violations_count')
                             ->label('Total Pelanggaran')
                             ->state(fn ($record) => $record->violations()->count()),
-
                         TextEntry::make('approved_violations_count')
                             ->label('Pelanggaran Disetujui')
                             ->state(fn ($record) => $record->violations()->where('status', 'approved')->count()),
-
                         TextEntry::make('pending_violations_count')
                             ->label('Pelanggaran Pending')
                             ->state(fn ($record) => $record->violations()->where('status', 'pending')->count()),

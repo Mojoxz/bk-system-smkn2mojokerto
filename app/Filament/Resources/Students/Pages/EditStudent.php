@@ -16,4 +16,11 @@ class EditStudent extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['major_id'] = $this->record->classroom?->major_id;
+
+        return $data;
+    }
 }

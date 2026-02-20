@@ -2,29 +2,31 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\StudentsExport;
 use App\Filament\Resources\StudentResource\Pages;
+use App\Models\Classroom;
+use App\Models\Major;
 use App\Models\Student;
 use App\Services\StudentService;
-use Filament\Forms;
-
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;  // Filament 4
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Actions\Action;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\StudentsExport;
 
 class StudentResource extends Resource
 {
@@ -65,10 +67,43 @@ class StudentResource extends Resource
                             ->label('Nama Lengkap')
                             ->required()
                             ->maxLength(255),
-                        TextInput::make('class')
-                            ->label('Kelas')
+
+                        // Pilih Jurusan dulu — tidak disimpan ke DB
+                        Select::make('major_id')
+                            ->label('Jurusan')
+                            ->options(
+                                Major::where('is_active', true)
+                                    ->orderBy('name')
+                                    ->pluck('name', 'id')
+                            )
+                            ->searchable()
+                            ->preload()
                             ->required()
-                            ->maxLength(255),
+                            ->live()
+                            ->afterStateUpdated(fn (callable $set) => $set('classroom_id', null))
+                            ->dehydrated(false), // tidak disimpan ke tabel students
+
+                        // Dropdown Kelas — difilter berdasarkan Jurusan
+                        Select::make('classroom_id')
+                            ->label('Kelas')
+                            ->options(function (Get $get) {
+                                $majorId = $get('major_id');
+
+                                if (!$majorId) {
+                                    return [];
+                                }
+
+                                return Classroom::where('major_id', $majorId)
+                                    ->where('is_active', true)
+                                    ->orderBy('name')
+                                    ->pluck('name', 'id');
+                            })
+                            ->searchable()
+                            ->required()
+                            ->live()
+                            ->disabled(fn (Get $get) => !$get('major_id'))
+                            ->helperText(fn (Get $get) => !$get('major_id') ? 'Pilih jurusan terlebih dahulu' : null),
+
                         TextInput::make('absen')
                             ->label('Nomor Absen')
                             ->maxLength(255),
@@ -119,7 +154,11 @@ class StudentResource extends Resource
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('class')
+                Tables\Columns\TextColumn::make('classroom.major.name')
+                    ->label('Jurusan')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('classroom.name')
                     ->label('Kelas')
                     ->searchable()
                     ->sortable(),
@@ -141,9 +180,12 @@ class StudentResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('class')
+                Tables\Filters\SelectFilter::make('major')
+                    ->label('Jurusan')
+                    ->relationship('classroom.major', 'name'),
+                Tables\Filters\SelectFilter::make('classroom_id')
                     ->label('Kelas')
-                    ->options(fn () => Student::distinct()->pluck('class', 'class')->toArray()),
+                    ->relationship('classroom', 'name'),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Status Aktif')
                     ->placeholder('Semua')
@@ -167,12 +209,15 @@ class StudentResource extends Resource
                     ->form([
                         FileUpload::make('file')
                             ->label('File Excel')
-                            ->acceptedFileTypes(['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
+                            ->acceptedFileTypes([
+                                'application/vnd.ms-excel',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            ])
                             ->required(),
                     ])
                     ->action(function (array $data) {
                         $service = new StudentService();
-                        $result = $service->importFromExcel($data['file']);
+                        $result  = $service->importFromExcel($data['file']);
 
                         if ($result['success']) {
                             \Filament\Notifications\Notification::make()
@@ -191,17 +236,20 @@ class StudentResource extends Resource
                 Action::make('export')
                     ->label('Export Excel')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->action(fn () => Excel::download(new StudentsExport(), 'siswa-' . now()->format('Y-m-d') . '.xlsx')),
+                    ->action(fn () => Excel::download(
+                        new StudentsExport(),
+                        'siswa-' . now()->format('Y-m-d') . '.xlsx'
+                    )),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListStudents::route('/'),
+            'index'  => Pages\ListStudents::route('/'),
             'create' => Pages\CreateStudent::route('/create'),
-            'edit' => Pages\EditStudent::route('/{record}/edit'),
-            'view' => Pages\ViewStudent::route('/{record}'),
+            'edit'   => Pages\EditStudent::route('/{record}/edit'),
+            'view'   => Pages\ViewStudent::route('/{record}'),
         ];
     }
 }

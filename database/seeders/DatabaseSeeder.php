@@ -12,7 +12,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             ViolationCategorySeeder::class,
             ViolationTypeSeeder::class,
-            StudentSeeder::class,
+            // StudentSeeder::class,
         ]);
     }
 }

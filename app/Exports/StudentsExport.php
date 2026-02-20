@@ -13,7 +13,10 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
 {
     public function query()
     {
-        return Student::query()->with('violations')->orderBy('class')->orderBy('name');
+        return Student::query()
+            ->with(['violations', 'classroom.major'])
+            ->orderBy('classroom_id')
+            ->orderBy('name');
     }
 
     public function headings(): array
@@ -22,6 +25,7 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'NISN',
             'Nama',
             'Kelas',
+            'Jurusan',
             'Absen',
             'Username',
             'Telepon',
@@ -37,7 +41,8 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         return [
             $student->nisn,
             $student->name,
-            $student->class,
+            $student->classroom?->name ?? '-',
+            $student->classroom?->major?->name ?? '-',
             $student->absen,
             $student->username,
             $student->phone,
