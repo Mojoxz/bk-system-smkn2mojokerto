@@ -21,7 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;  // Filament 4
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -68,7 +68,6 @@ class StudentResource extends Resource
                             ->required()
                             ->maxLength(255),
 
-                        // Pilih Jurusan dulu — tidak disimpan ke DB
                         Select::make('major_id')
                             ->label('Jurusan')
                             ->options(
@@ -81,9 +80,8 @@ class StudentResource extends Resource
                             ->required()
                             ->live()
                             ->afterStateUpdated(fn (callable $set) => $set('classroom_id', null))
-                            ->dehydrated(false), // tidak disimpan ke tabel students
+                            ->dehydrated(false),
 
-                        // Dropdown Kelas — difilter berdasarkan Jurusan
                         Select::make('classroom_id')
                             ->label('Kelas')
                             ->options(function (Get $get) {
@@ -195,7 +193,31 @@ class StudentResource extends Resource
             ->actions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->modalHeading('Hapus Siswa')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus siswa ini? Tindakan ini tidak dapat dibatalkan.')
+                    ->modalSubmitActionLabel('Ya, Hapus')
+                    ->modalCancelActionLabel('Batal')
+                    ->successNotification(null)
+                    ->after(function ($livewire) {
+                        $livewire->js("
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                            script.onload = function() {
+                                Swal.fire({
+                                    title: 'Dihapus!',
+                                    text: 'Siswa telah berhasil dihapus.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#4f46e5',
+                                    confirmButtonText: 'OK',
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                });
+                            };
+                            document.head.appendChild(script);
+                        ");
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
