@@ -141,7 +141,7 @@ class ViolationResource extends Resource
                         Select::make('status')
                             ->label('Status')
                             ->options([
-                                'pending' => 'Pending',
+                                'pending'  => 'Pending',
                                 'approved' => 'Disetujui',
                                 'rejected' => 'Ditolak',
                             ])
@@ -207,18 +207,18 @@ class ViolationResource extends Resource
                     ->badge()
                     ->color(function (string $state): string {
                         return match ($state) {
-                            'pending' => 'warning',
+                            'pending'  => 'warning',
                             'approved' => 'success',
                             'rejected' => 'danger',
-                            default => 'gray',
+                            default    => 'gray',
                         };
                     })
                     ->formatStateUsing(function (string $state): string {
                         return match ($state) {
-                            'pending' => 'Pending',
+                            'pending'  => 'Pending',
                             'approved' => 'Disetujui',
                             'rejected' => 'Ditolak',
-                            default => $state,
+                            default    => $state,
                         };
                     })
                     ->sortable(),
@@ -232,7 +232,7 @@ class ViolationResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options([
-                        'pending' => 'Pending',
+                        'pending'  => 'Pending',
                         'approved' => 'Disetujui',
                         'rejected' => 'Ditolak',
                     ]),
@@ -274,13 +274,25 @@ class ViolationResource extends Resource
                     ->visible(function (Violation $record): bool {
                         return $record->status === 'pending';
                     })
-                    ->action(function (Violation $record) {
+                    ->action(function (Violation $record, $livewire) {
                         $service = new ViolationService();
                         $service->approveViolation($record);
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pelanggaran Disetujui')
-                            ->success()
-                            ->send();
+                        $livewire->js("
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                            script.onload = function() {
+                                Swal.fire({
+                                    title: 'Disetujui!',
+                                    text: 'Pelanggaran telah berhasil disetujui.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#4f46e5',
+                                    confirmButtonText: 'OK',
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                });
+                            };
+                            document.head.appendChild(script);
+                        ");
                     }),
 
                 Action::make('reject')
@@ -296,16 +308,52 @@ class ViolationResource extends Resource
                             ->label('Alasan Penolakan')
                             ->required(),
                     ])
-                    ->action(function (Violation $record, array $data) {
+                    ->action(function (Violation $record, array $data, $livewire) {
                         $service = new ViolationService();
                         $service->rejectViolation($record, $data['notes']);
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pelanggaran Ditolak')
-                            ->success()
-                            ->send();
+                        $livewire->js("
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                            script.onload = function() {
+                                Swal.fire({
+                                    title: 'Ditolak!',
+                                    text: 'Pelanggaran telah berhasil ditolak.',
+                                    icon: 'warning',
+                                    confirmButtonColor: '#4f46e5',
+                                    confirmButtonText: 'OK',
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                });
+                            };
+                            document.head.appendChild(script);
+                        ");
                     }),
 
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->modalHeading('Hapus Data Pelanggaran')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus data pelanggaran ini? Tindakan ini tidak dapat dibatalkan.')
+                    ->modalSubmitActionLabel('Ya, Hapus')
+                    ->modalCancelActionLabel('Batal')
+                    ->successNotification(null)
+                    ->after(function ($livewire) {
+                        $livewire->js("
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                            script.onload = function() {
+                                Swal.fire({
+                                    title: 'Dihapus!',
+                                    text: 'Data pelanggaran telah berhasil dihapus.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#4f46e5',
+                                    confirmButtonText: 'OK',
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                });
+                            };
+                            document.head.appendChild(script);
+                        ");
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -320,7 +368,7 @@ class ViolationResource extends Resource
                         Select::make('status')
                             ->label('Status')
                             ->options([
-                                'pending' => 'Pending',
+                                'pending'  => 'Pending',
                                 'approved' => 'Disetujui',
                                 'rejected' => 'Ditolak',
                             ])
@@ -345,10 +393,10 @@ class ViolationResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListViolations::route('/'),
+            'index'  => Pages\ListViolations::route('/'),
             'create' => Pages\CreateViolation::route('/create'),
-            'edit' => Pages\EditViolation::route('/{record}/edit'),
-            'view' => Pages\ViewViolation::route('/{record}'),
+            'edit'   => Pages\EditViolation::route('/{record}/edit'),
+            'view'   => Pages\ViewViolation::route('/{record}'),
         ];
     }
 }

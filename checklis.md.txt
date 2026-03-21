@@ -37,7 +37,9 @@ requirement user =
 
 REVISI =
 
-dashboard masi ada duplicate untuk dashboard biasa dan bk
-membuat dropdown kelas jurusan dan rombel pada students
+dashboard masi ada duplicate untuk dashboard biasa dan bk (selesai)
+membuat dropdown kelas jurusan dan rombel pada students (selesai)
 masih ada error di gambar tidak bisa ngefetch di tampilan beranda
 masih ada error di bagian point yang custom harusnya ada fetch sendiri
+
+menambahkan edit profile admin
