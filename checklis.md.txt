@@ -44,4 +44,4 @@ masih ada error di bagian point yang custom harusnya ada fetch sendiri
 
 menambahkan edit profile admin
 
-masih ada error di violation resource
+zoom in masih belum bisa
