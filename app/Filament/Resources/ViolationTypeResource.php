@@ -10,6 +10,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -64,17 +66,39 @@ class ViolationTypeResource extends Resource
                             ->label('Deskripsi')
                             ->rows(3)
                             ->columnSpanFull(),
-                        TextInput::make('points')
-                            ->label('Poin')
-                            ->numeric()
-                            ->required()
-                            ->default(0)
-                            ->minValue(0)
-                            ->helperText('Poin yang akan ditambahkan jika melakukan pelanggaran ini'),
                         Toggle::make('is_custom')
                             ->label('Custom Poin')
-                            ->helperText('Jika diaktifkan, admin bisa input poin sendiri saat mencatat pelanggaran')
-                            ->default(false),
+                            ->helperText('Aktifkan jika poin tidak kelipatan 5 — admin input nilai manual saat mencatat pelanggaran')
+                            ->default(false)
+                            ->live()
+                            ->afterStateUpdated(
+                                fn(Set $set, $state) => $state
+                                    ? $set('points', null)
+                                    : $set('points', 5)
+                            ),
+                        Select::make('points')
+                            ->label('Poin')
+                            ->options(
+                                collect(range(1, 60))
+                                    ->mapWithKeys(fn($i) => [$i * 5 => $i * 5])
+                                    ->toArray()
+                            )
+                            ->required()
+                            ->default(5)
+                            ->searchable()
+                            ->helperText('Pilih poin kelipatan 5 (5–300).')
+                            ->hidden(fn(Get $get) => (bool) $get('is_custom'))
+                            ->dehydrated(fn(Get $get) => !(bool) $get('is_custom')),
+                        TextInput::make('points')
+                            ->label('Poin Custom')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->maxValue(999)
+                            ->placeholder('Masukkan poin ganjil, contoh: 7, 13, 27...')
+                            ->helperText('Isi poin secara manual untuk nilai yang tidak kelipatan 5.')
+                            ->hidden(fn(Get $get) => !(bool) $get('is_custom'))
+                            ->dehydrated(fn(Get $get) => (bool) $get('is_custom')),
                         Toggle::make('is_active')
                             ->label('Status Aktif')
                             ->default(true)
@@ -106,7 +130,10 @@ class ViolationTypeResource extends Resource
                 Tables\Columns\TextColumn::make('points')
                     ->label('Poin')
                     ->badge()
-                    ->color(fn($state) => $state >= 50 ? 'danger' : ($state >= 25 ? 'warning' : 'success'))
+                    ->formatStateUsing(fn($state, $record) => $record->is_custom ? 'Custom' : $state)
+                    ->color(fn($state, $record) => $record->is_custom
+                        ? 'gray'
+                        : ($state >= 50 ? 'danger' : ($state >= 25 ? 'warning' : 'success')))
                     ->sortable(),
                 Tables\Columns\IconColumn::make('is_custom')
                     ->label('Custom')
@@ -149,21 +176,21 @@ class ViolationTypeResource extends Resource
                     ->successNotification(null)
                     ->after(function ($livewire) {
                         $livewire->js("
-                const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-                script.onload = function() {
-                    Swal.fire({
-                        title: 'Dihapus!',
-                        text: 'Jenis pelanggaran telah berhasil dihapus.',
-                        icon: 'success',
-                        confirmButtonColor: '#4f46e5',
-                        confirmButtonText: 'OK',
-                        timer: 3000,
-                        timerProgressBar: true,
-                    });
-                };
-                document.head.appendChild(script);
-            ");
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                            script.onload = function() {
+                                Swal.fire({
+                                    title: 'Dihapus!',
+                                    text: 'Jenis pelanggaran telah berhasil dihapus.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#4f46e5',
+                                    confirmButtonText: 'OK',
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                });
+                            };
+                            document.head.appendChild(script);
+                        ");
                     }),
             ])
             ->bulkActions([

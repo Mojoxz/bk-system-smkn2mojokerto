@@ -38,6 +38,34 @@ class EditViolation extends EditRecord
         ];
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $signature = $data['signature'] ?? null;
+
+        if ($signature && str_starts_with($signature, 'data:image')) {
+            $data['use_signature_pad'] = true;
+            $data['signature_upload']  = null;
+        } else {
+            $data['use_signature_pad'] = false;
+            $data['signature_upload']  = $signature;
+            $data['signature']         = null;
+        }
+
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (!empty($data['signature_upload'])) {
+            $data['signature'] = $data['signature_upload'];
+        }
+
+        unset($data['signature_upload']);
+        unset($data['use_signature_pad']);
+
+        return $data;
+    }
+
     protected function getSavedNotification(): ?Notification
     {
         return null;

@@ -27,6 +27,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ViolationsExport;
+use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class ViolationResource extends Resource
 {
@@ -78,7 +79,10 @@ class ViolationResource extends Resource
                                 return ViolationType::with('category')
                                     ->get()
                                     ->mapWithKeys(function ($type) {
-                                        return [$type->id => "{$type->category->code} - {$type->name} ({$type->points} poin)"];
+                                        $label = $type->is_custom
+                                            ? "{$type->category->code} - {$type->name} (Custom Poin)"
+                                            : "{$type->category->code} - {$type->name} ({$type->points} poin)";
+                                        return [$type->id => $label];
                                     });
                             })
                             ->required()
@@ -89,6 +93,8 @@ class ViolationResource extends Resource
                                 $violationType = ViolationType::find($state);
                                 if ($violationType && !$violationType->is_custom) {
                                     $set('points', $violationType->points);
+                                } else {
+                                    $set('points', null);
                                 }
                             })
                             ->columnSpanFull(),
@@ -104,15 +110,14 @@ class ViolationResource extends Resource
                             ->numeric()
                             ->required()
                             ->minValue(0)
+                            ->dehydrated(true)
                             ->disabled(function (callable $get) {
                                 $typeId = $get('violation_type_id');
-                                if (!$typeId) {
-                                    return true;
-                                }
+                                if (!$typeId) return true;
                                 $type = ViolationType::find($typeId);
                                 return $type ? !$type->is_custom : true;
                             })
-                            ->helperText('Poin otomatis terisi. Hanya dapat diubah jika jenis pelanggaran mengizinkan custom poin'),
+                            ->helperText('Poin otomatis terisi. Hanya dapat diubah jika jenis pelanggaran bertipe Custom Poin.'),
 
                         Textarea::make('description')
                             ->label('Keterangan')
@@ -124,17 +129,42 @@ class ViolationResource extends Resource
                             ->image()
                             ->directory('violations/photos')
                             ->imageEditor()
-                            ->maxSize(2048)
-                            ->columnSpanFull(),
-
-                        FileUpload::make('signature')
-                            ->label('Tanda Tangan')
-                            ->image()
-                            ->directory('violations/signatures')
-                            ->maxSize(1024)
+                            ->maxSize(6144)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
+
+                Section::make('Tanda Tangan')
+                    ->description('Tanda tangan dapat digambar langsung atau diunggah sebagai foto.')
+                    ->schema([
+                        Toggle::make('use_signature_pad')
+                            ->label('Gambar Tanda Tangan')
+                            ->helperText('Aktifkan untuk menggambar langsung. Nonaktifkan untuk unggah foto.')
+                            ->default(true)
+                            ->live(),
+
+                        SignaturePad::make('signature')
+                            ->label('Tanda Tangan (Gambar Langsung)')
+                            ->visible(fn(callable $get) => (bool) $get('use_signature_pad'))
+                            ->downloadable()
+                            ->undoable()
+                            ->clearable()
+                            ->backgroundColor('rgb(255, 255, 255)')
+                            ->backgroundColorOnDark('rgb(30, 30, 30)')
+                            ->penColor('rgb(0, 0, 0)')
+                            ->penColorOnDark('rgb(255, 255, 255)')
+                            ->columnSpanFull(),
+
+                        FileUpload::make('signature_upload')
+                            ->label('Tanda Tangan (Upload Foto)')
+                            ->image()
+                            ->directory('violations/signatures')
+                            ->imageEditor()
+                            ->maxSize(6144)
+                            ->visible(fn(callable $get) => !(bool) $get('use_signature_pad'))
+                            ->dehydrated(fn(callable $get) => !(bool) $get('use_signature_pad'))
+                            ->columnSpanFull(),
+                    ]),
 
                 Section::make('Status & Catatan')
                     ->schema([
@@ -254,11 +284,11 @@ class ViolationResource extends Resource
                         return $query
                             ->when(
                                 $data['date_from'],
-                                fn ($q) => $q->whereDate('violation_date', '>=', $data['date_from'])
+                                fn($q) => $q->whereDate('violation_date', '>=', $data['date_from'])
                             )
                             ->when(
                                 $data['date_to'],
-                                fn ($q) => $q->whereDate('violation_date', '<=', $data['date_to'])
+                                fn($q) => $q->whereDate('violation_date', '<=', $data['date_to'])
                             );
                     }),
             ])
@@ -271,9 +301,7 @@ class ViolationResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(function (Violation $record): bool {
-                        return $record->status === 'pending';
-                    })
+                    ->visible(fn(Violation $record): bool => $record->status === 'pending')
                     ->action(function (Violation $record, $livewire) {
                         $service = new ViolationService();
                         $service->approveViolation($record);
@@ -300,9 +328,7 @@ class ViolationResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(function (Violation $record): bool {
-                        return $record->status === 'pending';
-                    })
+                    ->visible(fn(Violation $record): bool => $record->status === 'pending')
                     ->form([
                         Textarea::make('notes')
                             ->label('Alasan Penolakan')

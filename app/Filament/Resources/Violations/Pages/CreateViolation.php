@@ -22,6 +22,20 @@ class CreateViolation extends CreateRecord
         ];
     }
 
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['admin_id'] = auth()->id();
+
+        if (!empty($data['signature_upload'])) {
+            $data['signature'] = $data['signature_upload'];
+        }
+
+        unset($data['signature_upload']);
+        unset($data['use_signature_pad']);
+
+        return $data;
+    }
+
     protected function getCreatedNotification(): ?Notification
     {
         return null;
