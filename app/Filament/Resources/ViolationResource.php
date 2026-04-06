@@ -110,8 +110,7 @@ class ViolationResource extends Resource
                             ->numeric()
                             ->required()
                             ->minValue(0)
-                            ->dehydrated(true)
-                            ->disabled(function (callable $get) {
+                            ->readOnly(function (callable $get) {
                                 $typeId = $get('violation_type_id');
                                 if (!$typeId) return true;
                                 $type = ViolationType::find($typeId);
