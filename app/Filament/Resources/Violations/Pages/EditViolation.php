@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class EditViolation extends EditRecord
 {
@@ -40,15 +41,33 @@ class EditViolation extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
+        // Handle photo_evidence — kosongkan kalau file tidak ada agar tidak loading terus
+        if (!empty($data['photo_evidence'])) {
+            $photoExists = Storage::disk('public')->exists($data['photo_evidence']);
+            if (!$photoExists) {
+                $data['photo_evidence'] = null;
+            }
+        }
+
+        // Handle signature
         $signature = $data['signature'] ?? null;
 
         if ($signature && str_starts_with($signature, 'data:image')) {
+            // Signature dari SignaturePad (base64) — langsung pakai
             $data['use_signature_pad'] = true;
             $data['signature_upload']  = null;
-        } else {
+
+        } elseif ($signature) {
+            // Signature dari FileUpload (path file) — cek apakah file ada
+            $fileExists = Storage::disk('public')->exists($signature);
             $data['use_signature_pad'] = false;
-            $data['signature_upload']  = $signature;
-            $data['signature']         = null;
+            $data['signature_upload']  = $fileExists ? $signature : null;
+            $data['signature']         = $fileExists ? null : $signature;
+
+        } else {
+            // Tidak ada signature sama sekali
+            $data['use_signature_pad'] = true;
+            $data['signature_upload']  = null;
         }
 
         return $data;
@@ -56,9 +75,18 @@ class EditViolation extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        if (!empty($data['signature_upload'])) {
-            $data['signature'] = $data['signature_upload'];
+        $useSignaturePad = $data['use_signature_pad'] ?? true;
+
+        if (!$useSignaturePad) {
+            // Mode upload foto
+            if (!empty($data['signature_upload'])) {
+                // Ada file baru atau file lama yang di-load ulang
+                $data['signature'] = $data['signature_upload'];
+            }
+            // Kalau signature_upload kosong, biarkan signature tidak berubah
+            // (tidak di-overwrite dengan null)
         }
+        // Kalau mode pad, nilai signature sudah terisi langsung dari SignaturePad
 
         unset($data['signature_upload']);
         unset($data['use_signature_pad']);

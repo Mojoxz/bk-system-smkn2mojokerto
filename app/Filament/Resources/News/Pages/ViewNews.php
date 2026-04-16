@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\NewsResource\Pages;
 
 use App\Filament\Resources\NewsResource;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
@@ -13,6 +15,19 @@ use Filament\Infolists\Components\IconEntry;
 class ViewNews extends ViewRecord
 {
     protected static string $resource = NewsResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('back')
+                ->label('Kembali')
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->url($this->getResource()::getUrl('index')),
+
+            EditAction::make(),
+        ];
+    }
 
     public function infolist(Schema $schema): Schema
     {
@@ -28,6 +43,7 @@ class ViewNews extends ViewRecord
                             ->label('Penulis'),
                         ImageEntry::make('image')
                             ->label('Gambar')
+                            ->disk('public')
                             ->columnSpanFull(),
                         TextEntry::make('content')
                             ->label('Konten')

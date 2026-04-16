@@ -126,6 +126,7 @@ class ViolationResource extends Resource
                         FileUpload::make('photo_evidence')
                             ->label('Bukti Foto')
                             ->image()
+                            ->disk('public')                     // ← DITAMBAHKAN
                             ->directory('violations/photos')
                             ->imageEditor()
                             ->maxSize(6144)
@@ -157,6 +158,7 @@ class ViolationResource extends Resource
                         FileUpload::make('signature_upload')
                             ->label('Tanda Tangan (Upload Foto)')
                             ->image()
+                            ->disk('public')                     // ← DITAMBAHKAN
                             ->directory('violations/signatures')
                             ->imageEditor()
                             ->maxSize(6144)

@@ -28,8 +28,10 @@
             <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ $news->title }}</h1>
 
             <div class="flex items-center text-gray-600 text-sm mb-6">
-                <span>{{ $news->published_at->format('d F Y, H:i') }}</span>
-                <span class="mx-2">•</span>
+                @if($news->published_at)
+                    <span>{{ $news->published_at->format('d F Y, H:i') }}</span>
+                    <span class="mx-2">•</span>
+                @endif
                 <span>{{ $news->views }} views</span>
                 @if($news->admin)
                     <span class="mx-2">•</span>
@@ -38,7 +40,12 @@
             </div>
 
             @if($news->image)
-                <img src="{{ Storage::url($news->image) }}" alt="{{ $news->title }}" class="w-full rounded-lg mb-6">
+                <img
+                    src="{{ asset('storage/' . $news->image) }}"
+                    alt="{{ $news->title }}"
+                    class="w-full rounded-lg mb-6 object-cover"
+                    onerror="this.style.display='none'"
+                >
             @endif
 
             <div class="prose max-w-none">
@@ -53,7 +60,12 @@
                     @foreach($relatedNews as $item)
                         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
                             @if($item->image)
-                                <img src="{{ Storage::url($item->image) }}" alt="{{ $item->title }}" class="w-full h-32 object-cover">
+                                <img
+                                    src="{{ asset('storage/' . $item->image) }}"
+                                    alt="{{ $item->title }}"
+                                    class="w-full h-32 object-cover"
+                                    onerror="this.style.display='none'"
+                                >
                             @endif
                             <div class="p-4">
                                 <h4 class="font-semibold mb-2">{{ Str::limit($item->title, 50) }}</h4>
