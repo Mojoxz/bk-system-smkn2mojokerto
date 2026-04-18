@@ -1,110 +1,123 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil - BK SMKN 2 Mojokerto</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-gray-50">
-    @include('student.partials.navbar')
+@extends('student.layouts.app')
 
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6">Profil Saya</h2>
+@section('title', 'Profil Saya')
+@section('heading', 'Profil Saya')
+@section('subheading', 'Informasi akun dan data pribadi Anda')
 
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
+@section('content')
 
-        @if($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                <ul class="list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 class="text-xl font-semibold mb-4">Informasi Pribadi</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <p class="text-gray-600">NISN</p>
-                    <p class="font-semibold">{{ $student->nisn }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Nama</p>
-                    <p class="font-semibold">{{ $student->name }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Kelas</p>
-                    <p class="font-semibold">{{ $student->class }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Absen</p>
-                    <p class="font-semibold">{{ $student->absen ?? '-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Username</p>
-                    <p class="font-semibold">{{ $student->username }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Total Poin</p>
-                    <p class="font-semibold {{ $student->total_points >= 100 ? 'text-red-600' : ($student->total_points >= 50 ? 'text-yellow-600' : 'text-green-600') }}">
-                        {{ $student->total_points }} poin
-                    </p>
-                </div>
-            </div>
+    @if(session('success'))
+        <div class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-5 text-sm">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            {{ session('success') }}
         </div>
+    @endif
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-xl font-semibold mb-4">Edit Profil</h3>
-            <form method="POST" action="{{ route('student.profile.update') }}">
-                @csrf
-                @method('PUT')
+    @if($errors->any())
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm">
+            <ul class="space-y-0.5">
+                @foreach($errors->all() as $error)
+                    <li>• {{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-                <div class="mb-4">
-                    <label for="phone" class="block text-gray-700 font-semibold mb-2">Nomor Telepon</label>
-                    <input type="text"
-                           id="phone"
-                           name="phone"
-                           value="{{ old('phone', $student->phone) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
-                </div>
-
-                <div class="mb-4">
-                    <label for="address" class="block text-gray-700 font-semibold mb-2">Alamat</label>
-                    <textarea id="address"
-                              name="address"
-                              rows="3"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">{{ old('address', $student->address) }}</textarea>
-                </div>
-
-                <div class="mb-4">
-                    <label for="password" class="block text-gray-700 font-semibold mb-2">Password Baru (Kosongkan jika tidak ingin mengubah)</label>
-                    <input type="password"
-                           id="password"
-                           name="password"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
-                </div>
-
-                <div class="mb-6">
-                    <label for="password_confirmation" class="block text-gray-700 font-semibold mb-2">Konfirmasi Password Baru</label>
-                    <input type="password"
-                           id="password_confirmation"
-                           name="password_confirmation"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
-                </div>
-
-                <button type="submit"
-                        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold">
-                    Simpan Perubahan
-                </button>
-            </form>
+    {{-- Info section --}}
+    <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5">
+        <h2 class="text-sm font-semibold text-gray-700 mb-4">Informasi Pribadi</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6 text-sm">
+            <div>
+                <p class="text-xs text-gray-500 mb-0.5">NISN</p>
+                <p class="font-medium text-gray-900">{{ $student->nisn }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-0.5">Nama Lengkap</p>
+                <p class="font-medium text-gray-900">{{ $student->name }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-0.5">Kelas</p>
+                <p class="font-medium text-gray-900">{{ $student->class }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-0.5">No. Absen</p>
+                <p class="font-medium text-gray-900">{{ $student->absen ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-0.5">Username</p>
+                <p class="font-medium text-gray-900">{{ $student->username }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-0.5">Total Poin</p>
+                <p class="font-semibold {{ $student->total_points >= 100 ? 'text-red-600' : ($student->total_points >= 50 ? 'text-amber-500' : 'text-blue-600') }}">
+                    {{ $student->total_points }} poin
+                </p>
+            </div>
         </div>
     </div>
-</body>
-</html>
+
+    {{-- Edit form --}}
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h2 class="text-sm font-semibold text-gray-700 mb-5">Edit Profil</h2>
+
+        <form method="POST" action="{{ route('student.profile.update') }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Telepon</label>
+                <input type="text"
+                       id="phone" name="phone"
+                       value="{{ old('phone', $student->phone) }}"
+                       placeholder="Contoh: 08123456789"
+                       class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg
+                              focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
+                              bg-white text-gray-900 placeholder:text-gray-400">
+            </div>
+
+            <div>
+                <label for="address" class="block text-sm font-medium text-gray-700 mb-1.5">Alamat</label>
+                <textarea id="address" name="address" rows="3"
+                          placeholder="Alamat lengkap..."
+                          class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg
+                                 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
+                                 bg-white text-gray-900 placeholder:text-gray-400 resize-none">{{ old('address', $student->address) }}</textarea>
+            </div>
+
+            <div class="pt-2 border-t border-gray-100">
+                <p class="text-xs text-gray-400 mb-3">Kosongkan kolom password jika tidak ingin mengubah</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">Password Baru</label>
+                        <input type="password"
+                               id="password" name="password"
+                               class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
+                                      bg-white text-gray-900">
+                    </div>
+                    <div>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1.5">Konfirmasi Password</label>
+                        <input type="password"
+                               id="password_confirmation" name="password_confirmation"
+                               class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
+                                      bg-white text-gray-900">
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-1">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium
+                               px-5 py-2.5 rounded-lg transition-colors">
+                    Simpan Perubahan
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+@endsection
