@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StudentAuthController;
 use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\Student\StudentViolationReportController;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::get('/news/{slug}', [LandingController::class, 'showNews'])->name('news.show');
@@ -21,7 +22,9 @@ Route::prefix('student')->name('student.')->group(function () {
         Route::get('/profile', [StudentDashboardController::class, 'profile'])->name('profile');
         Route::put('/profile', [StudentDashboardController::class, 'updateProfile'])->name('profile.update');
         Route::get('/violations', [StudentDashboardController::class, 'violations'])->name('violations');
-        Route::get('/report-violation', [StudentDashboardController::class, 'reportForm'])->name('report.form');
-        Route::post('/report-violation', [StudentDashboardController::class, 'reportStore'])->name('report.store');
+
+        // Lapor Pelanggaran — ditangani controller tersendiri
+        Route::get('/report-violation', [StudentViolationReportController::class, 'create'])->name('report.form');
+        Route::post('/report-violation', [StudentViolationReportController::class, 'store'])->name('report.store');
     });
 });
