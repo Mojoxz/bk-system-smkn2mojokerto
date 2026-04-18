@@ -15,6 +15,8 @@ class StudentDashboardController extends Controller
     public function index()
     {
         $student = Auth::guard('student')->user();
+        $student->load('classroom.major');
+
         $service = new StudentService();
         $statistics = $service->getStudentStatistics($student);
 
@@ -24,6 +26,8 @@ class StudentDashboardController extends Controller
     public function profile()
     {
         $student = Auth::guard('student')->user();
+        $student->load('classroom.major');
+
         return view('student.profile', compact('student'));
     }
 
@@ -32,8 +36,8 @@ class StudentDashboardController extends Controller
         $student = Auth::guard('student')->user();
 
         $validated = $request->validate([
-            'phone' => 'nullable|string|max:255',
-            'address' => 'nullable|string',
+            'phone'    => 'nullable|string|max:255',
+            'address'  => 'nullable|string',
             'password' => 'nullable|min:6|confirmed',
         ]);
 
@@ -51,6 +55,8 @@ class StudentDashboardController extends Controller
     public function violations()
     {
         $student = Auth::guard('student')->user();
+        $student->load('classroom.major');
+
         $violations = $student->violations()
             ->with(['violationType.category'])
             ->latest('violation_date')
@@ -75,14 +81,14 @@ class StudentDashboardController extends Controller
 
         $validated = $request->validate([
             'violation_type_id' => 'required|exists:violation_types,id',
-            'description' => 'required|string',
-            'photo_evidence' => 'nullable|image|max:2048',
-            'signature' => 'nullable|image|max:1024',
+            'description'       => 'required|string',
+            'photo_evidence'    => 'nullable|image|max:2048',
+            'signature'         => 'nullable|image|max:1024',
         ]);
 
-        $validated['student_id'] = $student->id;
+        $validated['student_id']     = $student->id;
         $validated['violation_date'] = now();
-        $validated['status'] = 'pending';
+        $validated['status']         = 'pending';
 
         $service->createViolation($validated);
 

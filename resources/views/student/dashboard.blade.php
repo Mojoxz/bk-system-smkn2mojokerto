@@ -15,7 +15,15 @@
             </div>
             <div>
                 <p class="text-gray-500 text-xs mb-0.5">Kelas</p>
-                <p class="font-medium text-gray-900">{{ $student->class }}</p>
+                <p class="font-medium text-gray-900">
+                    {{ $student->classroom->name ?? '-' }}
+                </p>
+            </div>
+            <div>
+                <p class="text-gray-500 text-xs mb-0.5">Jurusan</p>
+                <p class="font-medium text-gray-900">
+                    {{ $student->classroom->major->name ?? '-' }}
+                </p>
             </div>
             <div>
                 <p class="text-gray-500 text-xs mb-0.5">No. Absen</p>
