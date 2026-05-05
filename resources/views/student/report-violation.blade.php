@@ -4,168 +4,11 @@
 @section('heading', 'Lapor Pelanggaran')
 @section('subheading', 'Isi formulir berikut untuk melaporkan pelanggaran')
 
-@push('styles')
-<style>
-    .sig-tab-btn,
-    .cam-tab-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 14px;
-        font-size: 12px;
-        font-weight: 500;
-        border-radius: 8px;
-        border: 1.5px solid;
-        cursor: pointer;
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
-        transition: background-color .15s, color .15s, border-color .15s, box-shadow .15s;
-        white-space: nowrap;
-    }
-    .sig-tab-btn.active,
-    .cam-tab-btn.active {
-        background-color: #2563eb !important;
-        color: #fff !important;
-        border-color: #2563eb !important;
-        box-shadow: 0 1px 4px rgba(37,99,235,.4);
-    }
-    .sig-tab-btn:not(.active),
-    .cam-tab-btn:not(.active) {
-        background-color: #f3f4f6 !important;
-        color: #374151 !important;
-        border-color: #d1d5db !important;
-        box-shadow: none;
-    }
-    .sig-tab-btn:not(.active):hover,
-    .cam-tab-btn:not(.active):hover {
-        background-color: #e0e7ff !important;
-        color: #3730a3 !important;
-        border-color: #a5b4fc !important;
-    }
-    .sig-tab-btn:not(.active):active,
-    .cam-tab-btn:not(.active):active {
-        background-color: #c7d2fe !important;
-        color: #3730a3 !important;
-        border-color: #818cf8 !important;
-        transform: scale(0.97);
-    }
-    .sig-tab-btn.active:active,
-    .cam-tab-btn.active:active {
-        transform: scale(0.97);
-    }
-
-    /* Kamera */
-    .cam-wrapper {
-        position: relative;
-        background: #000;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        width: 100%;
-        aspect-ratio: 4 / 3;
-        max-height: 320px;
-    }
-    .cam-wrapper video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-    .cam-overlay {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-    }
-    .cam-timestamp {
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-    .cam-timestamp span {
-        background: rgba(0, 0, 0, 0.55);
-        color: #fff;
-        font-size: 11px;
-        font-family: ui-monospace, monospace;
-        padding: 2px 8px;
-        border-radius: 4px;
-        white-space: nowrap;
-    }
-    .cam-rec-dot {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 9px;
-        height: 9px;
-        background: #ef4444;
-        border-radius: 50%;
-        opacity: 0;
-    }
-    .cam-rec-dot.live {
-        animation: blink-rec 1s infinite;
-    }
-    @keyframes blink-rec {
-        0%, 100% { opacity: 1; }
-        50%       { opacity: 0; }
-    }
-    .cam-off-state {
-        position: absolute;
-        inset: 0;
-        background: #111;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-    .cam-off-state svg { opacity: .45; }
-    .cam-off-state span { font-size: 12px; color: #9ca3af; }
-
-    /* Signature canvas */
-    #signature-canvas {
-        border: 1.5px solid #e5e7eb;
-        border-radius: 8px;
-        touch-action: none;
-        background: #fff;
-        display: block;
-        width: 100%;
-        height: 170px;
-        /* PENTING: cursor crosshair supaya user tahu area ini bisa digambar */
-        cursor: crosshair;
-    }
-    #signature-canvas.drawing { border-color: #2563eb; }
-
-    /* Drop zone */
-    .drop-zone { transition: border-color .15s, background .15s; }
-    .drop-zone.dragover { border-color: #2563eb !important; background: #eff6ff !important; }
-
-    /* Snap preview */
-    .snap-preview {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        margin-top: 10px;
-        padding: 10px 12px;
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-    }
-    .snap-preview img {
-        max-height: 90px;
-        max-width: 130px;
-        object-fit: cover;
-        border-radius: 6px;
-        border: 1px solid #e5e7eb;
-    }
-</style>
-@endpush
-
 @section('content')
 
     @if($errors->any())
-        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm">
-            <ul class="space-y-0.5">
+        <div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:13px;">
+            <ul style="margin:0;padding:0;list-style:none;">
                 @foreach($errors->all() as $error)
                     <li>• {{ $error }}</li>
                 @endforeach
@@ -173,333 +16,277 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
-        <form id="report-form" method="POST" action="{{ route('student.report.store') }}"
-              enctype="multipart/form-data" class="space-y-5">
-            @csrf
+    <form id="report-form" method="POST" action="{{ route('student.report.store') }}" enctype="multipart/form-data">
+        @csrf
 
-            {{-- ──────────────────────────────────────── --}}
-            {{-- Jenis Pelanggaran --}}
-            {{-- ──────────────────────────────────────── --}}
-            <div>
-                <label for="violation_type_id"
-                       class="block text-sm font-medium text-gray-700 mb-1.5">
-                    Jenis Pelanggaran <span class="text-red-500">*</span>
-                </label>
-                <select id="violation_type_id" name="violation_type_id" required
-                        class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg bg-white
-                               text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30
-                               focus:border-blue-500">
-                    <option value="">-- Pilih Jenis Pelanggaran --</option>
-                    @foreach($violationTypes as $categoryName => $types)
-                        <optgroup label="{{ $categoryName }}">
-                            @foreach($types as $type)
-                                <option value="{{ $type->id }}"
-                                    {{ old('violation_type_id') == $type->id ? 'selected' : '' }}>
-                                    {{ $type->name }} ({{ $type->points }} poin)
-                                </option>
+        {{-- ═══════════════════════════════════ --}}
+        {{-- GRID DUA KOLOM --}}
+        {{-- ═══════════════════════════════════ --}}
+        <div id="report-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+            {{-- ══════════════ KOLOM KIRI ══════════════ --}}
+            <div style="display:flex;flex-direction:column;gap:16px;">
+
+                {{-- Card: Data Pelanggaran --}}
+                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;">
+
+                    <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="opacity:.5;flex-shrink:0;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Data Pelanggaran
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
+                        <label for="violation_type_id" style="font-size:13px;color:#374151;font-weight:500;">
+                            Jenis Pelanggaran <span style="color:#ef4444;">*</span>
+                        </label>
+                        <select id="violation_type_id" name="violation_type_id" required
+                                style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827;outline:none;font-family:inherit;">
+                            <option value="">-- Pilih Jenis Pelanggaran --</option>
+                            @foreach($violationTypes as $categoryName => $types)
+                                <optgroup label="{{ $categoryName }}">
+                                    @foreach($types as $type)
+                                        <option value="{{ $type->id }}" {{ old('violation_type_id') == $type->id ? 'selected' : '' }}>
+                                            {{ $type->name }} ({{ $type->points }} poin)
+                                        </option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
-                        </optgroup>
-                    @endforeach
-                </select>
-            </div>
+                        </select>
+                    </div>
 
-            {{-- ──────────────────────────────────────── --}}
-            {{-- Keterangan --}}
-            {{-- ──────────────────────────────────────── --}}
-            <div>
-                <label for="description"
-                       class="block text-sm font-medium text-gray-700 mb-1.5">
-                    Keterangan <span class="text-red-500">*</span>
-                </label>
-                <textarea id="description" name="description" rows="4" required
-                          placeholder="Jelaskan detail pelanggaran yang terjadi..."
-                          class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg bg-white
-                                 text-gray-900 placeholder:text-gray-400 resize-none
-                                 focus:outline-none focus:ring-2 focus:ring-blue-500/30
-                                 focus:border-blue-500">{{ old('description') }}</textarea>
-            </div>
-
-            {{-- ──────────────────────────────────────── --}}
-            {{-- BUKTI FOTO  (Kamera / Upload) --}}
-            {{-- ──────────────────────────────────────── --}}
-            <div>
-                <p class="block text-sm font-medium text-gray-700 mb-3">
-                    Bukti Foto
-                    <span class="text-gray-400 font-normal">(Opsional)</span>
-                </p>
-
-                {{-- Tab --}}
-                <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-                    <button type="button" id="foto-tab-cam"
-                            style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
-                                   font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;
-                                   border:1.5px solid #2563eb;background:#2563eb;color:#fff;
-                                   transition:background .15s,border-color .15s,transform .1s;
-                                   user-select:none;-webkit-tap-highlight-color:transparent;
-                                   white-space:nowrap;line-height:1.4">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2" style="flex-shrink:0">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0
-                                     0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07
-                                     7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        Kamera Langsung
-                    </button>
-                    <button type="button" id="foto-tab-upload"
-                            style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
-                                   font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;
-                                   border:1.5px solid #d1d5db;background:#f3f4f6;color:#374151;
-                                   transition:background .15s,border-color .15s,transform .1s;
-                                   user-select:none;-webkit-tap-highlight-color:transparent;
-                                   white-space:nowrap;line-height:1.4">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2" style="flex-shrink:0">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0
-                                     0L8 8m4-4v12"/>
-                        </svg>
-                        Upload File
-                    </button>
+                    <div style="display:flex;flex-direction:column;gap:5px;">
+                        <label for="description" style="font-size:13px;color:#374151;font-weight:500;">
+                            Keterangan <span style="color:#ef4444;">*</span>
+                        </label>
+                        <textarea id="description" name="description" rows="5" required
+                                  placeholder="Jelaskan detail pelanggaran yang terjadi..."
+                                  style="width:100%;font-size:13px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827;outline:none;font-family:inherit;resize:vertical;min-height:100px;">{{ old('description') }}</textarea>
+                    </div>
                 </div>
 
-                {{-- Panel: Kamera --}}
-                <div id="foto-panel-cam">
-                    <div class="cam-wrapper">
-                        <video id="foto-video" autoplay playsinline muted
-                               aria-label="Tampilan kamera bukti foto"></video>
+                <div style="display:flex;gap:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;align-items:flex-start;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Laporan akan diverifikasi oleh guru BK sebelum diproses.
+                </div>
 
-                        {{-- Overlay jam & tanggal --}}
-                        <div class="cam-overlay">
-                            <div class="cam-timestamp">
-                                <span id="foto-cam-date"></span>
-                                <span id="foto-cam-time"></span>
-                            </div>
-                            <div class="cam-rec-dot" id="foto-rec-dot"></div>
-                        </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit"
+                            style="background:#1d4ed8;color:#fff;font-size:13px;font-weight:500;padding:10px 22px;border-radius:8px;border:none;cursor:pointer;">
+                        Kirim Laporan
+                    </button>
+                    <a href="{{ route('student.dashboard') }}"
+                       style="background:#fff;color:#374151;font-size:13px;font-weight:500;padding:10px 18px;border-radius:8px;border:1px solid #d1d5db;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;">
+                        Batal
+                    </a>
+                </div>
 
-                        {{-- State kamera mati --}}
-                        <div class="cam-off-state" id="foto-cam-off">
-                            <svg width="44" height="44" fill="none" viewBox="0 0 24 24"
-                                 stroke="white" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2
-                                         0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0
-                                         0118.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0
-                                         01-2-2V9z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </div>{{-- /kolom kiri --}}
+
+            {{-- ══════════════ KOLOM KANAN ══════════════ --}}
+            <div style="display:flex;flex-direction:column;gap:16px;">
+
+                {{-- ─── Card: Bukti Foto ─── --}}
+                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;">
+
+                    <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="opacity:.5;flex-shrink:0;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Bukti Foto
+                        <span style="font-size:10px;font-weight:400;color:#9ca3af;text-transform:none;letter-spacing:0;">(opsional)</span>
+                    </div>
+
+                    <div style="display:flex;gap:6px;margin-bottom:14px;">
+                        <button type="button" id="foto-tab-cam" onclick="switchFotoTab('cam')"
+                                style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;cursor:pointer;white-space:nowrap;line-height:1.4;">
+                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            <span>Kamera belum aktif</span>
+                            Kamera Langsung
+                        </button>
+                        <button type="button" id="foto-tab-upload" onclick="switchFotoTab('upload')"
+                                style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;cursor:pointer;white-space:nowrap;line-height:1.4;">
+                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            Upload File
+                        </button>
+                    </div>
+
+                    {{-- Panel Kamera --}}
+                    <div id="foto-panel-cam" style="display:block;">
+                        <div style="position:relative;background:#0a0a0a;border-radius:8px;overflow:hidden;aspect-ratio:4/3;width:100%;">
+                            <video id="foto-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;"></video>
+                            <div id="foto-cam-off" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#111;">
+                                <svg width="40" height="40" fill="none" stroke="white" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <span style="font-size:11px;color:#6b7280;">Kamera belum aktif</span>
+                            </div>
+                            <div style="position:absolute;bottom:8px;left:8px;display:flex;flex-direction:column;gap:2px;">
+                                <span id="foto-cam-date" style="font-size:10px;font-family:ui-monospace,monospace;background:rgba(0,0,0,.55);color:#fff;padding:2px 6px;border-radius:4px;white-space:nowrap;"></span>
+                                <span id="foto-cam-time" style="font-size:10px;font-family:ui-monospace,monospace;background:rgba(0,0,0,.55);color:#fff;padding:2px 6px;border-radius:4px;white-space:nowrap;"></span>
+                            </div>
+                            <div id="foto-rec-dot" style="position:absolute;top:8px;right:8px;width:7px;height:7px;background:#ef4444;border-radius:50%;display:none;"></div>
                         </div>
-                    </div>
 
-                    <div class="flex flex-wrap items-center gap-2 mt-2">
-                        <button type="button" id="foto-btn-start"
-                                class="text-xs px-3 py-1.5 rounded-md bg-blue-600 text-white
-                                       hover:bg-blue-700 transition-colors">
-                            Aktifkan Kamera
-                        </button>
-                        <button type="button" id="foto-btn-snap" style="display:none"
-                                class="text-xs px-3 py-1.5 rounded-md border border-gray-300
-                                       text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                            📸 Ambil Foto
-                        </button>
-                        <button type="button" id="foto-btn-stop" style="display:none"
-                                class="text-xs px-3 py-1.5 rounded-md border border-red-200
-                                       text-red-600 bg-white hover:bg-red-50 transition-colors">
-                            Matikan Kamera
-                        </button>
-                        <span id="foto-cam-status" class="text-xs text-gray-400"></span>
-                    </div>
-
-                    {{-- Hasil foto --}}
-                    <div id="foto-snap-result" class="snap-preview hidden">
-                        <img id="foto-snap-img" src="" alt="Foto bukti">
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">Foto berhasil diambil</p>
-                            <p class="text-xs text-gray-500 mt-0.5" id="foto-snap-ts"></p>
-                            <button type="button" id="foto-btn-clear-snap"
-                                    class="mt-2 text-xs px-3 py-1 rounded-md border border-red-200
-                                           text-red-600 bg-white hover:bg-red-50 transition-colors">
-                                ✕ Hapus Foto
+                        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;">
+                            <button type="button" id="foto-btn-start" onclick="startCamera()"
+                                    style="font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;cursor:pointer;line-height:1.4;">
+                                Aktifkan Kamera
                             </button>
+                            <button type="button" id="foto-btn-snap" onclick="snapPhoto()"
+                                    style="display:none;font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;cursor:pointer;line-height:1.4;">
+                                📸 Ambil Foto
+                            </button>
+                            <button type="button" id="foto-btn-stop" onclick="stopCamera()"
+                                    style="display:none;font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid #fca5a5;background:#fff;color:#dc2626;cursor:pointer;line-height:1.4;">
+                                Matikan Kamera
+                            </button>
+                            <span id="foto-cam-status" style="font-size:11px;color:#9ca3af;"></span>
+                        </div>
+
+                        <div id="foto-snap-result" style="display:none;margin-top:10px;padding:10px 12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;gap:10px;align-items:flex-start;">
+                            <img id="foto-snap-img" src="" alt="Foto bukti" style="max-height:80px;max-width:110px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;flex-shrink:0;">
+                            <div>
+                                <p style="font-size:12px;font-weight:500;color:#111827;margin:0;">Foto berhasil diambil</p>
+                                <span id="foto-snap-ts" style="font-size:11px;color:#6b7280;"></span>
+                                <div style="margin-top:6px;">
+                                    <button type="button" onclick="clearSnap()"
+                                            style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #fca5a5;background:#fff;color:#dc2626;cursor:pointer;">
+                                        ✕ Hapus Foto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="foto-cam-data" name="photo_cam_data">
+                    </div>
+
+                    {{-- Panel Upload Foto --}}
+                    <div id="foto-panel-upload" style="display:none;">
+                        <div id="foto-drop-zone"
+                             onclick="document.getElementById('photo_evidence').click()"
+                             ondragover="dzOver(event,'foto-drop-zone')"
+                             ondragleave="dzLeave('foto-drop-zone')"
+                             ondrop="dzDrop(event,'foto')"
+                             style="border:1.5px dashed #d1d5db;border-radius:8px;padding:22px 12px;text-align:center;cursor:pointer;">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="opacity:.3;margin:0 auto 6px;display:block;width:24px;height:24px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                            </svg>
+                            <p style="font-size:12px;color:#6b7280;margin:0;">Klik atau seret foto ke sini</p>
+                            <span style="font-size:11px;color:#9ca3af;">JPG, PNG — maks 2 MB</span>
+                        </div>
+                        <input type="file" id="photo_evidence" name="photo_evidence" accept="image/*" style="display:none;"
+                               onchange="fileSelected(this,'foto',2)">
+                        <div id="foto-upload-preview" style="display:none;margin-top:10px;padding:10px 12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;gap:10px;align-items:flex-start;">
+                            <img id="foto-upload-img" src="" alt="Preview" style="max-height:80px;max-width:110px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;flex-shrink:0;">
+                            <div>
+                                <p style="font-size:12px;font-weight:500;color:#111827;margin:0;">File dipilih</p>
+                                <span id="foto-upload-name" style="font-size:11px;color:#6b7280;"></span>
+                                <div style="margin-top:6px;">
+                                    <button type="button" onclick="clearUpload('foto')"
+                                            style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #fca5a5;background:#fff;color:#dc2626;cursor:pointer;">
+                                        ✕ Hapus
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {{-- Hidden inputs untuk foto kamera --}}
-                    <input type="hidden" id="foto-cam-data" name="photo_cam_data">
-                </div>
+                </div>{{-- /card foto --}}
 
-                {{-- Panel: Upload --}}
-                <div id="foto-panel-upload" class="hidden">
-                    <div id="foto-drop-zone"
-                         class="drop-zone border-2 border-dashed border-gray-200 rounded-lg p-6
-                                text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50">
-                        <svg class="w-7 h-7 text-gray-300 mx-auto mb-2" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021
-                                     18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                {{-- ─── Card: Tanda Tangan ─── --}}
+                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;">
+
+                    <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="opacity:.5;flex-shrink:0;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-2.414a2 2 0 01.586-1.414z"/>
                         </svg>
-                        <p class="text-sm text-gray-500">Klik atau seret foto ke sini</p>
-                        <p class="text-xs text-gray-400 mt-0.5">JPG, PNG — maks 2 MB</p>
-                        <input type="file" id="photo_evidence" name="photo_evidence"
-                               accept="image/*" class="hidden">
+                        Tanda Tangan
+                        <span style="font-size:10px;font-weight:400;color:#9ca3af;text-transform:none;letter-spacing:0;">(opsional)</span>
                     </div>
 
-                    <div id="foto-upload-preview" class="snap-preview hidden">
-                        <img id="foto-upload-img" src="" alt="Preview">
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">File dipilih</p>
-                            <p class="text-xs text-gray-500 mt-0.5" id="foto-upload-name"></p>
-                            <button type="button" id="foto-btn-remove-upload"
-                                    class="mt-2 text-xs px-3 py-1 rounded-md border border-red-200
-                                           text-red-600 bg-white hover:bg-red-50 transition-colors">
+                    <div style="display:flex;gap:6px;margin-bottom:14px;">
+                        <button type="button" id="sig-tab-pad" onclick="switchSigTab('pad')"
+                                style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;cursor:pointer;white-space:nowrap;line-height:1.4;">
+                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-2.414a2 2 0 01.586-1.414z"/>
+                            </svg>
+                            Gambar Langsung
+                        </button>
+                        <button type="button" id="sig-tab-upload" onclick="switchSigTab('upload')"
+                                style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;cursor:pointer;white-space:nowrap;line-height:1.4;">
+                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            Upload Foto
+                        </button>
+                    </div>
+
+                    {{-- Panel Signature Pad --}}
+                    <div id="sig-panel-pad" style="display:block;">
+                        <canvas id="sig-canvas" aria-label="Area tanda tangan"
+                                style="display:block;width:100%;height:150px;border:1px solid #d1d5db;border-radius:8px;background:#fff;cursor:crosshair;touch-action:none;"></canvas>
+                        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;">
+                            <button type="button" onclick="sigUndo()"
+                                    style="font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;cursor:pointer;line-height:1.4;">
+                                ↩ Undo
+                            </button>
+                            <button type="button" onclick="sigClear()"
+                                    style="font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid #fca5a5;background:#fff;color:#dc2626;cursor:pointer;line-height:1.4;">
                                 ✕ Hapus
                             </button>
+                            <span style="font-size:11px;color:#9ca3af;">Gambar tanda tangan di area atas</span>
+                        </div>
+                        <input type="hidden" id="signature-data" name="signature">
+                    </div>
+
+                    {{-- Panel Upload TTD --}}
+                    <div id="sig-panel-upload" style="display:none;">
+                        <div id="sig-drop-zone"
+                             onclick="document.getElementById('signature_upload').click()"
+                             ondragover="dzOver(event,'sig-drop-zone')"
+                             ondragleave="dzLeave('sig-drop-zone')"
+                             ondrop="dzDrop(event,'sig')"
+                             style="border:1.5px dashed #d1d5db;border-radius:8px;padding:22px 12px;text-align:center;cursor:pointer;">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="opacity:.3;margin:0 auto 6px;display:block;width:24px;height:24px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                            </svg>
+                            <p style="font-size:12px;color:#6b7280;margin:0;">Klik atau seret foto tanda tangan</p>
+                            <span style="font-size:11px;color:#9ca3af;">JPG, PNG — maks 1 MB</span>
+                        </div>
+                        <input type="file" id="signature_upload" name="signature_upload" accept="image/*" style="display:none;"
+                               onchange="fileSelected(this,'sig',1)">
+                        <div id="sig-upload-preview" style="display:none;margin-top:10px;padding:10px 12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;gap:10px;align-items:flex-start;">
+                            <img id="sig-upload-img" src="" alt="Preview TTD" style="max-height:80px;max-width:110px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;flex-shrink:0;">
+                            <div>
+                                <p style="font-size:12px;font-weight:500;color:#111827;margin:0;">File dipilih</p>
+                                <span id="sig-upload-name" style="font-size:11px;color:#6b7280;"></span>
+                                <div style="margin-top:6px;">
+                                    <button type="button" onclick="clearUpload('sig')"
+                                            style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #fca5a5;background:#fff;color:#dc2626;cursor:pointer;">
+                                        ✕ Hapus
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {{-- ──────────────────────────────────────── --}}
-            {{-- TANDA TANGAN (Gambar / Upload) --}}
-            {{-- ──────────────────────────────────────── --}}
-            <div>
-                <p class="block text-sm font-medium text-gray-700 mb-3">
-                    Tanda Tangan
-                    <span class="text-gray-400 font-normal">(Opsional)</span>
-                </p>
+                </div>{{-- /card tanda tangan --}}
 
-                {{-- Tab --}}
-                <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-                    <button type="button" id="sig-tab-pad"
-                            style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
-                                   font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;
-                                   border:1.5px solid #2563eb;background:#2563eb;color:#fff;
-                                   transition:background .15s,border-color .15s,transform .1s;
-                                   user-select:none;-webkit-tap-highlight-color:transparent;
-                                   white-space:nowrap;line-height:1.4">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2" style="flex-shrink:0">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828
-                                     2.828L11.828 15.828a2 2 0 01-1.415.586H9v-2.414a2 2 0
-                                     01.586-1.414z"/>
-                        </svg>
-                        Gambar Langsung
-                    </button>
-                    <button type="button" id="sig-tab-upload"
-                            style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
-                                   font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;
-                                   border:1.5px solid #d1d5db;background:#f3f4f6;color:#374151;
-                                   transition:background .15s,border-color .15s,transform .1s;
-                                   user-select:none;-webkit-tap-highlight-color:transparent;
-                                   white-space:nowrap;line-height:1.4">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2" style="flex-shrink:0">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0
-                                     0L8 8m4-4v12"/>
-                        </svg>
-                        Upload Foto
-                    </button>
-                </div>
+            </div>{{-- /kolom kanan --}}
 
-                {{-- Panel: Gambar pad --}}
-                <div id="sig-panel-pad">
-                    {{--
-                        PENTING: width/height di sini hanya placeholder awal.
-                        JS akan set ukuran sebenarnya saat initCanvas() dipanggil.
-                        CSS width:100%; height:170px mengatur tampilan visual.
-                    --}}
-                    <canvas id="signature-canvas"
-                            aria-label="Area tanda tangan"></canvas>
-                    <div class="flex items-center gap-2 mt-2">
-                        <button type="button" id="btn-undo"
-                                class="text-xs px-3 py-1.5 rounded-md border border-gray-300
-                                       text-gray-600 bg-white hover:bg-gray-50 transition-colors">
-                            ↩ Undo
-                        </button>
-                        <button type="button" id="btn-clear"
-                                class="text-xs px-3 py-1.5 rounded-md border border-red-200
-                                       text-red-600 bg-white hover:bg-red-50 transition-colors">
-                            ✕ Hapus
-                        </button>
-                        <span class="text-xs text-gray-400">Gambar tanda tangan di area atas</span>
-                    </div>
-                    {{--
-                        name="signature" — cocok dengan $request->filled('signature') di controller.
-                        Nilai diisi JS saat saveSignature().
-                    --}}
-                    <input type="hidden" id="signature-data" name="signature">
-                </div>
+        </div>{{-- /report-grid --}}
+    </form>
 
-                {{-- Panel: Upload TTD --}}
-                <div id="sig-panel-upload" class="hidden">
-                    <div id="sig-drop-zone"
-                         class="drop-zone border-2 border-dashed border-gray-200 rounded-lg p-6
-                                text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50">
-                        <svg class="w-7 h-7 text-gray-300 mx-auto mb-2" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021
-                                     18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
-                        </svg>
-                        <p class="text-sm text-gray-500">Klik atau seret foto tanda tangan</p>
-                        <p class="text-xs text-gray-400 mt-0.5">JPG, PNG — maks 1 MB</p>
-                        <input type="file" id="signature-upload-input" name="signature_upload"
-                               accept="image/*" class="hidden">
-                    </div>
-                    <div id="sig-upload-preview" class="snap-preview hidden">
-                        <img id="sig-upload-img" src="" alt="Preview TTD">
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">File dipilih</p>
-                            <p class="text-xs text-gray-500 mt-0.5" id="sig-upload-name"></p>
-                            <button type="button" id="sig-btn-remove-upload"
-                                    class="mt-2 text-xs px-3 py-1 rounded-md border border-red-200
-                                           text-red-600 bg-white hover:bg-red-50 transition-colors">
-                                ✕ Hapus
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- ──────────────────────────────────────── --}}
-            {{-- Catatan & Actions --}}
-            {{-- ──────────────────────────────────────── --}}
-            <div class="flex gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3
-                        text-sm text-amber-700">
-                <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                     viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Laporan akan diverifikasi oleh guru BK sebelum diproses.
-            </div>
-
-            <div class="flex gap-3 pt-1">
-                <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium
-                               px-5 py-2.5 rounded-lg transition-colors">
-                    Kirim Laporan
-                </button>
-                <a href="{{ route('student.dashboard') }}"
-                   class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700
-                          text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
-                    Batal
-                </a>
-            </div>
-        </form>
-    </div>
-
-    {{-- Canvas tersembunyi untuk mengambil foto bukti --}}
-    <canvas id="foto-hidden-canvas" class="hidden"></canvas>
+    <canvas id="foto-hidden-canvas" style="display:none;"></canvas>
 
 @endsection
 
@@ -508,7 +295,21 @@
 (function () {
     'use strict';
 
-    /* ─── Utilitas tanggal & waktu (Bahasa Indonesia) ─── */
+    /* ── Responsif: satu kolom di layar sempit ── */
+    function applyGrid() {
+        var grid = document.getElementById('report-grid');
+        if (!grid) return;
+        grid.style.gridTemplateColumns = window.innerWidth < 768 ? '1fr' : '1fr 1fr';
+    }
+    applyGrid();
+    window.addEventListener('resize', applyGrid);
+
+    /* ── Inject keyframe animasi rec dot ── */
+    var ks = document.createElement('style');
+    ks.textContent = '@keyframes blink-rec{0%,100%{opacity:1}50%{opacity:0}}';
+    document.head.appendChild(ks);
+
+    /* ── Tanggal & Waktu (Bahasa Indonesia) ── */
     var DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
     var MONTHS = ['Januari','Februari','Maret','April','Mei','Juni',
                   'Juli','Agustus','September','Oktober','November','Desember'];
@@ -521,361 +322,236 @@
                String(d.getMinutes()).padStart(2,'0') + ':' +
                String(d.getSeconds()).padStart(2,'0');
     }
-
-    /* Clock realtime untuk overlay kamera */
     function tickClock() {
         var n = new Date();
-        var elDate = document.getElementById('foto-cam-date');
-        var elTime = document.getElementById('foto-cam-time');
-        if (elDate) elDate.textContent = fmtDate(n);
-        if (elTime) elTime.textContent = fmtTime(n);
+        var ed = document.getElementById('foto-cam-date');
+        var et = document.getElementById('foto-cam-time');
+        if (ed) ed.textContent = fmtDate(n);
+        if (et) et.textContent = fmtTime(n);
     }
     tickClock();
     setInterval(tickClock, 1000);
 
-    /* Bakar timestamp ke frame canvas foto */
-    function stampCanvas(ctx, cw, ch) {
-        var n    = new Date();
-        var txt1 = fmtDate(n);
-        var txt2 = fmtTime(n);
+    /* ── Stamp timestamp ke canvas ── */
+    function stampCanvas(ctx, w, h) {
+        var n = new Date(), txt1 = fmtDate(n), txt2 = fmtTime(n);
         ctx.save();
-        ctx.font = '13px ui-monospace, monospace';
-        var pad = 8, lh = 18, boxH = lh * 2 + pad;
-        var boxW = Math.max(ctx.measureText(txt1).width, ctx.measureText(txt2).width) + pad * 2;
+        ctx.font = '13px ui-monospace,monospace';
+        var pad = 8, lh = 18, bh = lh * 2 + pad;
+        var bw = Math.max(ctx.measureText(txt1).width, ctx.measureText(txt2).width) + pad * 2;
         ctx.fillStyle = 'rgba(0,0,0,0.55)';
-        ctx.fillRect(pad, ch - boxH - pad, boxW, boxH);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(txt1, pad * 2, ch - pad - lh);
-        ctx.fillText(txt2, pad * 2, ch - pad);
+        ctx.fillRect(pad, h - bh - pad, bw, bh);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(txt1, pad * 2, h - pad - lh);
+        ctx.fillText(txt2, pad * 2, h - pad);
         ctx.restore();
         return { date: txt1, time: txt2 };
     }
 
-    /* ─── Signature Pad ─────────────────────────────────────────────────────
-       Pendekatan sederhana: TIDAK ada DPR scaling, TIDAK ada ResizeObserver,
-       TIDAK ada initCanvas. Canvas pakai ukuran tetap via CSS (width:100%,
-       height:170px). Koordinat diambil langsung dari getBoundingClientRect()
-       relatif CSS px — konsisten antara draw dan redraw.
-    ──────────────────────────────────────────────────────────────────────── */
+    /* ══════════════════════════════════════
+       SIGNATURE PAD
+    ══════════════════════════════════════ */
+    var sigCanvas = document.getElementById('sig-canvas');
+    var sigCtx    = sigCanvas.getContext('2d');
+    var sigInput  = document.getElementById('signature-data');
+    var drawing   = false, strokes = [], curStroke = [];
 
-    var canvas   = document.getElementById('signature-canvas');
-    var sigCtx   = canvas.getContext('2d');
-    var sigInput = document.getElementById('signature-data');
-
-    /* Set ukuran canvas internal = ukuran CSS setelah layout selesai */
-    function syncCanvasSize() {
-        var w = canvas.offsetWidth  || 600;
-        var h = canvas.offsetHeight || 170;
-        if (canvas.width !== w || canvas.height !== h) {
-            canvas.width  = w;
-            canvas.height = h;
-            redrawStrokes(); /* gambar ulang setelah resize */
+    function syncCanvas() {
+        var w = sigCanvas.offsetWidth || 400, h = sigCanvas.offsetHeight || 150;
+        if (sigCanvas.width !== w || sigCanvas.height !== h) {
+            sigCanvas.width = w; sigCanvas.height = h; redraw();
         }
     }
-
-    var drawing = false;
-    var strokes = []; /* Array<Array<{x,y}>> dalam CSS px */
-    var current = [];
-
-    function redrawStrokes() {
-        sigCtx.clearRect(0, 0, canvas.width, canvas.height);
-        strokes.forEach(function (stroke) {
-            if (stroke.length < 2) return;
-            sigCtx.beginPath();
-            sigCtx.moveTo(stroke[0].x, stroke[0].y);
-            for (var i = 1; i < stroke.length; i++) {
-                sigCtx.lineTo(stroke[i].x, stroke[i].y);
-            }
-            sigCtx.strokeStyle = '#1e293b';
-            sigCtx.lineWidth   = 2.2;
-            sigCtx.lineCap     = 'round';
-            sigCtx.lineJoin    = 'round';
-            sigCtx.stroke();
+    function redraw() {
+        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+        strokes.forEach(function (s) {
+            if (s.length < 2) return;
+            sigCtx.beginPath(); sigCtx.moveTo(s[0].x, s[0].y);
+            for (var i = 1; i < s.length; i++) sigCtx.lineTo(s[i].x, s[i].y);
+            sigCtx.strokeStyle = '#1e293b'; sigCtx.lineWidth = 2.2;
+            sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round'; sigCtx.stroke();
         });
     }
-
-    function saveSignature() {
-        sigInput.value = strokes.length ? canvas.toDataURL('image/png') : '';
-    }
-
+    function saveSig() { sigInput.value = strokes.length ? sigCanvas.toDataURL('image/png') : ''; }
     function getPos(e) {
-        var rect = canvas.getBoundingClientRect();
-        var src  = e.touches ? e.touches[0] : e;
-        return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+        var r = sigCanvas.getBoundingClientRect(), src = e.touches ? e.touches[0] : e;
+        return { x: src.clientX - r.left, y: src.clientY - r.top };
     }
-
-    function onStartDraw(e) {
-        e.preventDefault();
-        syncCanvasSize(); /* pastikan ukuran benar sebelum mulai gambar */
-        drawing = true;
-        current = [];
-        canvas.classList.add('drawing');
-        var p = getPos(e);
-        sigCtx.beginPath();
-        sigCtx.moveTo(p.x, p.y);
-        current.push(p);
+    function startDraw(e) {
+        e.preventDefault(); syncCanvas(); drawing = true; curStroke = [];
+        sigCanvas.style.borderColor = '#3b82f6';
+        var p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); curStroke.push(p);
     }
-
-    function onDraw(e) {
-        if (!drawing) return;
-        e.preventDefault();
-        var p = getPos(e);
-        sigCtx.lineTo(p.x, p.y);
-        sigCtx.strokeStyle = '#1e293b';
-        sigCtx.lineWidth   = 2.2;
-        sigCtx.lineCap     = 'round';
-        sigCtx.lineJoin    = 'round';
-        sigCtx.stroke();
-        current.push(p);
+    function moveDraw(e) {
+        if (!drawing) return; e.preventDefault();
+        var p = getPos(e); sigCtx.lineTo(p.x, p.y);
+        sigCtx.strokeStyle = '#1e293b'; sigCtx.lineWidth = 2.2;
+        sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round'; sigCtx.stroke(); curStroke.push(p);
     }
-
-    function onEndDraw() {
-        if (!drawing) return;
-        drawing = false;
-        canvas.classList.remove('drawing');
-        if (current.length > 0) {
-            strokes.push(current.slice());
-            current = [];
-            saveSignature();
-        }
+    function endDraw() {
+        if (!drawing) return; drawing = false;
+        sigCanvas.style.borderColor = '#d1d5db';
+        if (curStroke.length) { strokes.push(curStroke.slice()); curStroke = []; saveSig(); }
     }
+    sigCanvas.addEventListener('mousedown',  startDraw);
+    sigCanvas.addEventListener('mousemove',  moveDraw);
+    sigCanvas.addEventListener('mouseup',    endDraw);
+    sigCanvas.addEventListener('mouseleave', endDraw);
+    sigCanvas.addEventListener('touchstart', startDraw, { passive: false });
+    sigCanvas.addEventListener('touchmove',  moveDraw,  { passive: false });
+    sigCanvas.addEventListener('touchend',   endDraw);
 
-    canvas.addEventListener('mousedown',  onStartDraw);
-    canvas.addEventListener('mousemove',  onDraw);
-    canvas.addEventListener('mouseup',    onEndDraw);
-    canvas.addEventListener('mouseleave', onEndDraw);
-    canvas.addEventListener('touchstart', onStartDraw, { passive: false });
-    canvas.addEventListener('touchmove',  onDraw,      { passive: false });
-    canvas.addEventListener('touchend',   onEndDraw);
-
-    document.getElementById('btn-undo').addEventListener('click', function () {
-        strokes.pop();
-        redrawStrokes();
-        saveSignature();
-    });
-
-    document.getElementById('btn-clear').addEventListener('click', function () {
-        strokes = [];
-        current = [];
-        sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+    window.sigUndo  = function () { strokes.pop(); redraw(); saveSig(); };
+    window.sigClear = function () {
+        strokes = []; curStroke = [];
+        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
         sigInput.value = '';
-    });
+    };
+    syncCanvas();
 
-    /* Sinkronisasi ukuran canvas satu kali saat halaman siap */
-    syncCanvasSize();
-
-    /* ─── Kamera Bukti Foto ─── */
+    /* ══════════════════════════════════════
+       KAMERA BUKTI FOTO
+    ══════════════════════════════════════ */
     var fotoStream = null;
 
-    var fotoVideo      = document.getElementById('foto-video');
-    var fotoCamOff     = document.getElementById('foto-cam-off');
-    var fotoBtnStart   = document.getElementById('foto-btn-start');
-    var fotoBtnSnap    = document.getElementById('foto-btn-snap');
-    var fotoBtnStop    = document.getElementById('foto-btn-stop');
-    var fotoCamStatus  = document.getElementById('foto-cam-status');
-    var fotoRecDot     = document.getElementById('foto-rec-dot');
-    var fotoSnapResult = document.getElementById('foto-snap-result');
-    var fotoSnapImg    = document.getElementById('foto-snap-img');
-    var fotoSnapTs     = document.getElementById('foto-snap-ts');
-    var fotoBtnClear   = document.getElementById('foto-btn-clear-snap');
-    var fotoCamData    = document.getElementById('foto-cam-data');
-    var fotoCanvas     = document.getElementById('foto-hidden-canvas');
-
-    fotoBtnStart.addEventListener('click', function () {
+    window.startCamera = function () {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
             .then(function (stream) {
                 fotoStream = stream;
-                fotoVideo.srcObject = stream;
-                fotoCamOff.style.display   = 'none';
-                fotoBtnStart.style.display = 'none';
-                fotoBtnSnap.style.display  = '';
-                fotoBtnStop.style.display  = '';
-                fotoRecDot.classList.add('live');
-                fotoCamStatus.textContent  = 'Kamera aktif';
+                document.getElementById('foto-video').srcObject = stream;
+                document.getElementById('foto-cam-off').style.display    = 'none';
+                document.getElementById('foto-btn-start').style.display  = 'none';
+                document.getElementById('foto-btn-snap').style.display   = 'inline-flex';
+                document.getElementById('foto-btn-stop').style.display   = 'inline-flex';
+                var dot = document.getElementById('foto-rec-dot');
+                dot.style.display    = 'block';
+                dot.style.animation  = 'blink-rec 1s infinite';
+                document.getElementById('foto-cam-status').textContent   = 'Kamera aktif';
             })
             .catch(function () {
-                fotoCamStatus.textContent = 'Akses kamera ditolak atau tidak tersedia.';
+                document.getElementById('foto-cam-status').textContent = 'Akses kamera ditolak atau tidak tersedia.';
             });
-    });
+    };
 
-    fotoBtnStop.addEventListener('click', function () {
+    window.stopCamera = function () {
         if (fotoStream) { fotoStream.getTracks().forEach(function (t) { t.stop(); }); fotoStream = null; }
-        fotoVideo.srcObject        = null;
-        fotoBtnStart.style.display = '';
-        fotoBtnSnap.style.display  = 'none';
-        fotoBtnStop.style.display  = 'none';
-        fotoRecDot.classList.remove('live');
-        fotoCamStatus.textContent  = '';
-        fotoCamOff.style.display   = '';
-    });
+        document.getElementById('foto-video').srcObject          = null;
+        document.getElementById('foto-cam-off').style.display    = 'flex';
+        document.getElementById('foto-btn-start').style.display  = 'inline-flex';
+        document.getElementById('foto-btn-snap').style.display   = 'none';
+        document.getElementById('foto-btn-stop').style.display   = 'none';
+        document.getElementById('foto-rec-dot').style.display    = 'none';
+        document.getElementById('foto-cam-status').textContent   = '';
+    };
 
-    fotoBtnSnap.addEventListener('click', function () {
-        var w = fotoVideo.videoWidth  || 640;
-        var h = fotoVideo.videoHeight || 480;
-        fotoCanvas.width  = w;
-        fotoCanvas.height = h;
-        var ctx = fotoCanvas.getContext('2d');
-        ctx.drawImage(fotoVideo, 0, 0, w, h);
-        var stamp = stampCanvas(ctx, w, h);
-        var dataUrl = fotoCanvas.toDataURL('image/jpeg', 0.92);
-        fotoCamData.value     = dataUrl;
-        fotoSnapImg.src       = dataUrl;
-        fotoSnapTs.textContent = stamp.date + ' ' + stamp.time;
-        fotoSnapResult.classList.remove('hidden');
-    });
+    window.snapPhoto = function () {
+        var v = document.getElementById('foto-video');
+        var c = document.getElementById('foto-hidden-canvas');
+        c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
+        var ctx = c.getContext('2d');
+        ctx.drawImage(v, 0, 0, c.width, c.height);
+        var stamp  = stampCanvas(ctx, c.width, c.height);
+        var url    = c.toDataURL('image/jpeg', 0.92);
+        document.getElementById('foto-cam-data').value       = url;
+        document.getElementById('foto-snap-img').src         = url;
+        document.getElementById('foto-snap-ts').textContent  = stamp.date + ' ' + stamp.time;
+        document.getElementById('foto-snap-result').style.display = 'flex';
+    };
 
-    fotoBtnClear.addEventListener('click', function () {
-        fotoCamData.value = '';
-        fotoSnapImg.src   = '';
-        fotoSnapResult.classList.add('hidden');
-    });
+    window.clearSnap = function () {
+        document.getElementById('foto-cam-data').value              = '';
+        document.getElementById('foto-snap-img').src                = '';
+        document.getElementById('foto-snap-result').style.display   = 'none';
+    };
 
-    /* ─── Tab Bukti Foto ─── */
-    var fotoTabCam    = document.getElementById('foto-tab-cam');
-    var fotoTabUpload = document.getElementById('foto-tab-upload');
-    var fotoPanelCam  = document.getElementById('foto-panel-cam');
-    var fotoPanelUp   = document.getElementById('foto-panel-upload');
+    /* ══════════════════════════════════════
+       TAB SWITCHING
+    ══════════════════════════════════════ */
+    var ACT = 'display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;cursor:pointer;white-space:nowrap;line-height:1.4;';
+    var INA = 'display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;cursor:pointer;white-space:nowrap;line-height:1.4;';
 
-    var STYLE_BASE     = 'display:inline-flex;align-items:center;gap:6px;padding:7px 14px;' +
-                         'font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;' +
-                         'transition:background .15s,border-color .15s,transform .1s;' +
-                         'user-select:none;-webkit-tap-highlight-color:transparent;' +
-                         'white-space:nowrap;line-height:1.4;';
-    var STYLE_ACTIVE   = 'border:1.5px solid #2563eb;background:#2563eb;color:#fff;';
-    var STYLE_INACTIVE = 'border:1.5px solid #d1d5db;background:#f3f4f6;color:#374151;';
-
-    function setActive(btn)   { btn.setAttribute('style', STYLE_BASE + STYLE_ACTIVE);   }
-    function setInactive(btn) { btn.setAttribute('style', STYLE_BASE + STYLE_INACTIVE); }
-
-    fotoTabCam.addEventListener('click', function () {
-        setActive(fotoTabCam);
-        setInactive(fotoTabUpload);
-        fotoPanelCam.classList.remove('hidden');
-        fotoPanelUp.classList.add('hidden');
-        document.getElementById('photo_evidence').value = '';
-        document.getElementById('foto-upload-preview').classList.add('hidden');
-    });
-
-    fotoTabUpload.addEventListener('click', function () {
-        setActive(fotoTabUpload);
-        setInactive(fotoTabCam);
-        fotoPanelUp.classList.remove('hidden');
-        fotoPanelCam.classList.add('hidden');
-        fotoCamData.value = '';
-        if (fotoStream) { fotoStream.getTracks().forEach(function (t) { t.stop(); }); fotoStream = null; }
-    });
-
-    /* Drop-zone upload foto */
-    var fotoDropZone  = document.getElementById('foto-drop-zone');
-    var fotoFileInput = document.getElementById('photo_evidence');
-    var fotoUpPrev    = document.getElementById('foto-upload-preview');
-    var fotoUpImg     = document.getElementById('foto-upload-img');
-    var fotoUpName    = document.getElementById('foto-upload-name');
-    var fotoBtnRemUp  = document.getElementById('foto-btn-remove-upload');
-
-    fotoDropZone.addEventListener('click',    function ()  { fotoFileInput.click(); });
-    fotoDropZone.addEventListener('dragover', function (e) { e.preventDefault(); fotoDropZone.classList.add('dragover'); });
-    fotoDropZone.addEventListener('dragleave',function ()  { fotoDropZone.classList.remove('dragover'); });
-    fotoDropZone.addEventListener('drop',     function (e) {
-        e.preventDefault(); fotoDropZone.classList.remove('dragover');
-        handleUploadFile(e.dataTransfer.files[0], fotoFileInput, fotoUpImg, fotoUpName, fotoUpPrev, 2);
-    });
-    fotoFileInput.addEventListener('change', function () {
-        if (fotoFileInput.files.length)
-            handleUploadFile(fotoFileInput.files[0], fotoFileInput, fotoUpImg, fotoUpName, fotoUpPrev, 2);
-    });
-    fotoBtnRemUp.addEventListener('click', function () {
-        fotoFileInput.value = '';
-        fotoUpImg.src       = '';
-        fotoUpPrev.classList.add('hidden');
-    });
-
-    /* ─── Tab Tanda Tangan ─── */
-    var sigTabPad    = document.getElementById('sig-tab-pad');
-    var sigTabUpload = document.getElementById('sig-tab-upload');
-    var sigPanelPad  = document.getElementById('sig-panel-pad');
-    var sigPanelUp   = document.getElementById('sig-panel-upload');
-    var sigFileInput = document.getElementById('signature-upload-input');
-
-    function switchSigTab(active) {
-        if (active === 'pad') {
-            setActive(sigTabPad);
-            setInactive(sigTabUpload);
-            sigPanelPad.classList.remove('hidden');
-            sigPanelUp.classList.add('hidden');
-            sigFileInput.value = '';
-            document.getElementById('sig-upload-preview').classList.add('hidden');
-            /* Sinkronisasi ukuran canvas saat tab kembali ditampilkan */
-            syncCanvasSize();
+    window.switchFotoTab = function (tab) {
+        var isCam = tab === 'cam';
+        document.getElementById('foto-tab-cam').setAttribute('style',    isCam ? ACT : INA);
+        document.getElementById('foto-tab-upload').setAttribute('style', isCam ? INA : ACT);
+        document.getElementById('foto-panel-cam').style.display    = isCam ? 'block' : 'none';
+        document.getElementById('foto-panel-upload').style.display = isCam ? 'none'  : 'block';
+        if (!isCam) {
+            document.getElementById('foto-cam-data').value = '';
+            if (fotoStream) { fotoStream.getTracks().forEach(function (t) { t.stop(); }); fotoStream = null; }
         } else {
-            setActive(sigTabUpload);
-            setInactive(sigTabPad);
-            sigPanelUp.classList.remove('hidden');
-            sigPanelPad.classList.add('hidden');
+            document.getElementById('photo_evidence').value = '';
+            document.getElementById('foto-upload-preview').style.display = 'none';
+        }
+    };
+
+    window.switchSigTab = function (tab) {
+        var isPad = tab === 'pad';
+        document.getElementById('sig-tab-pad').setAttribute('style',    isPad ? ACT : INA);
+        document.getElementById('sig-tab-upload').setAttribute('style', isPad ? INA : ACT);
+        document.getElementById('sig-panel-pad').style.display    = isPad ? 'block' : 'none';
+        document.getElementById('sig-panel-upload').style.display = isPad ? 'none'  : 'block';
+        if (isPad) {
+            document.getElementById('signature_upload').value = '';
+            document.getElementById('sig-upload-preview').style.display = 'none';
+            syncCanvas();
+        } else {
             sigInput.value = '';
         }
-    }
+    };
 
-    sigTabPad.addEventListener('click',    function () { switchSigTab('pad');    });
-    sigTabUpload.addEventListener('click', function () { switchSigTab('upload'); });
+    /* ══════════════════════════════════════
+       DROP ZONE & FILE UPLOAD
+    ══════════════════════════════════════ */
+    window.dzOver  = function (e, id) {
+        e.preventDefault();
+        document.getElementById(id).style.borderColor = '#3b82f6';
+        document.getElementById(id).style.background  = '#eff6ff';
+    };
+    window.dzLeave = function (id) {
+        document.getElementById(id).style.borderColor = '#d1d5db';
+        document.getElementById(id).style.background  = 'transparent';
+    };
+    window.dzDrop  = function (e, prefix) {
+        e.preventDefault();
+        dzLeave(prefix === 'foto' ? 'foto-drop-zone' : 'sig-drop-zone');
+        applyFile(e.dataTransfer.files[0], prefix, prefix === 'sig' ? 1 : 2);
+    };
+    window.fileSelected = function (input, prefix, maxMb) {
+        if (input.files.length) applyFile(input.files[0], prefix, maxMb);
+    };
 
-    /* Drop-zone upload TTD */
-    var sigDropZone = document.getElementById('sig-drop-zone');
-    var sigUpPrev   = document.getElementById('sig-upload-preview');
-    var sigUpImg    = document.getElementById('sig-upload-img');
-    var sigUpName   = document.getElementById('sig-upload-name');
-    var sigBtnRemUp = document.getElementById('sig-btn-remove-upload');
-
-    sigDropZone.addEventListener('click',    function ()  { sigFileInput.click(); });
-    sigDropZone.addEventListener('dragover', function (e) { e.preventDefault(); sigDropZone.classList.add('dragover'); });
-    sigDropZone.addEventListener('dragleave',function ()  { sigDropZone.classList.remove('dragover'); });
-    sigDropZone.addEventListener('drop',     function (e) {
-        e.preventDefault(); sigDropZone.classList.remove('dragover');
-        handleUploadFile(e.dataTransfer.files[0], sigFileInput, sigUpImg, sigUpName, sigUpPrev, 1);
-    });
-    sigFileInput.addEventListener('change', function () {
-        if (sigFileInput.files.length)
-            handleUploadFile(sigFileInput.files[0], sigFileInput, sigUpImg, sigUpName, sigUpPrev, 1);
-    });
-    sigBtnRemUp.addEventListener('click', function () {
-        sigFileInput.value = '';
-        sigUpImg.src       = '';
-        sigUpPrev.classList.add('hidden');
-    });
-
-    /* ─── Helper: preview file upload ─── */
-    function handleUploadFile(file, input, imgEl, nameEl, wrapEl, maxMb) {
-        if (!file || !file.type.startsWith('image/')) return;
-        if (file.size > maxMb * 1024 * 1024) {
-            alert('Ukuran file melebihi ' + maxMb + ' MB.');
-            return;
-        }
-        try { var dt = new DataTransfer(); dt.items.add(file); input.files = dt.files; } catch (e) {}
-        var reader = new FileReader();
-        reader.onload = function (ev) {
-            imgEl.src          = ev.target.result;
-            nameEl.textContent = file.name;
-            wrapEl.classList.remove('hidden');
+    function applyFile(file, prefix, maxMb) {
+        if (!file || !file.type.startsWith('image/')) { alert('File harus berupa gambar (JPG/PNG).'); return; }
+        if (file.size > maxMb * 1024 * 1024) { alert('Ukuran file melebihi ' + maxMb + ' MB.'); return; }
+        var r = new FileReader();
+        r.onload = function (ev) {
+            document.getElementById(prefix + '-upload-img').src          = ev.target.result;
+            document.getElementById(prefix + '-upload-name').textContent = file.name;
+            document.getElementById(prefix + '-upload-preview').style.display = 'flex';
         };
-        reader.readAsDataURL(file);
+        r.readAsDataURL(file);
     }
 
-    /* ─── Submit: nonaktifkan field yang tidak dipakai ─── */
+    window.clearUpload = function (prefix) {
+        document.getElementById(prefix === 'foto' ? 'photo_evidence' : 'signature_upload').value = '';
+        document.getElementById(prefix + '-upload-img').src = '';
+        document.getElementById(prefix + '-upload-preview').style.display = 'none';
+    };
+
+    /* ══════════════════════════════════════
+       SUBMIT
+    ══════════════════════════════════════ */
     document.getElementById('report-form').addEventListener('submit', function () {
-        var padActive = !sigPanelPad.classList.contains('hidden');
-        var upActive  = !sigPanelUp.classList.contains('hidden');
+        var padVis   = document.getElementById('sig-panel-pad').style.display    !== 'none';
+        var sigUpVis = document.getElementById('sig-panel-upload').style.display !== 'none';
+        var camVis   = document.getElementById('foto-panel-cam').style.display   !== 'none';
 
-        if (!padActive) sigInput.disabled      = true;
-        if (!upActive)  sigFileInput.disabled  = true;
+        if (!padVis)   document.getElementById('signature-data').disabled   = true;
+        if (!sigUpVis) document.getElementById('signature_upload').disabled  = true;
+        if (!camVis)   document.getElementById('foto-cam-data').disabled     = true;
+        else           document.getElementById('photo_evidence').disabled    = true;
 
-        /* Bukti foto */
-        if (!fotoPanelUp.classList.contains('hidden')) {
-            fotoCamData.disabled   = true;
-        } else {
-            fotoFileInput.disabled = true;
-        }
-
-        /* Matikan stream kamera */
         if (fotoStream) fotoStream.getTracks().forEach(function (t) { t.stop(); });
     });
 

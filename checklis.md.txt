@@ -49,3 +49,4 @@ REVISI USER TAMPILAN =
 - ada error di tanda tangan langsung
 - detail pelanggaran
 - redesain side bar ada foto profil
+- beri sweetalert ketika selesai menambahkan pelanggaran\
