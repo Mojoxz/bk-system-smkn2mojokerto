@@ -22,7 +22,6 @@
         transition: background-color .15s, color .15s, border-color .15s, box-shadow .15s;
         white-space: nowrap;
     }
-    /* Aktif — biru solid */
     .sig-tab-btn.active,
     .cam-tab-btn.active {
         background-color: #2563eb !important;
@@ -30,18 +29,6 @@
         border-color: #2563eb !important;
         box-shadow: 0 1px 4px rgba(37,99,235,.4);
     }
-    .sig-tab-btn.active:hover,
-    .cam-tab-btn.active:hover {
-        background-color: #1d4ed8 !important;
-        border-color: #1d4ed8 !important;
-    }
-    .sig-tab-btn.active:active,
-    .cam-tab-btn.active:active {
-        background-color: #1e40af !important;
-        border-color: #1e40af !important;
-        box-shadow: none;
-    }
-    /* Tidak aktif — abu-abu muda, selalu punya fill */
     .sig-tab-btn:not(.active),
     .cam-tab-btn:not(.active) {
         background-color: #f3f4f6 !important;
@@ -55,7 +42,6 @@
         color: #3730a3 !important;
         border-color: #a5b4fc !important;
     }
-    /* Efek tekan — terlihat jelas di mobile */
     .sig-tab-btn:not(.active):active,
     .cam-tab-btn:not(.active):active {
         background-color: #c7d2fe !important;
@@ -140,12 +126,13 @@
     #signature-canvas {
         border: 1.5px solid #e5e7eb;
         border-radius: 8px;
-        cursor: crosshair;
         touch-action: none;
         background: #fff;
         display: block;
         width: 100%;
         height: 170px;
+        /* PENTING: cursor crosshair supaya user tahu area ini bisa digambar */
+        cursor: crosshair;
     }
     #signature-canvas.drawing { border-color: #2563eb; }
 
@@ -380,7 +367,7 @@
             </div>
 
             {{-- ──────────────────────────────────────── --}}
-            {{-- TANDA TANGAN (Gambar / Kamera / Upload) --}}
+            {{-- TANDA TANGAN (Gambar / Upload) --}}
             {{-- ──────────────────────────────────────── --}}
             <div>
                 <p class="block text-sm font-medium text-gray-700 mb-3">
@@ -388,7 +375,7 @@
                     <span class="text-gray-400 font-normal">(Opsional)</span>
                 </p>
 
-                {{-- Tab 2 opsi --}}
+                {{-- Tab --}}
                 <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
                     <button type="button" id="sig-tab-pad"
                             style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
@@ -425,7 +412,12 @@
 
                 {{-- Panel: Gambar pad --}}
                 <div id="sig-panel-pad">
-                    <canvas id="signature-canvas" width="600" height="170"
+                    {{--
+                        PENTING: width/height di sini hanya placeholder awal.
+                        JS akan set ukuran sebenarnya saat initCanvas() dipanggil.
+                        CSS width:100%; height:170px mengatur tampilan visual.
+                    --}}
+                    <canvas id="signature-canvas"
                             aria-label="Area tanda tangan"></canvas>
                     <div class="flex items-center gap-2 mt-2">
                         <button type="button" id="btn-undo"
@@ -440,6 +432,10 @@
                         </button>
                         <span class="text-xs text-gray-400">Gambar tanda tangan di area atas</span>
                     </div>
+                    {{--
+                        name="signature" — cocok dengan $request->filled('signature') di controller.
+                        Nilai diisi JS saat saveSignature().
+                    --}}
                     <input type="hidden" id="signature-data" name="signature">
                 </div>
 
@@ -513,9 +509,9 @@
     'use strict';
 
     /* ─── Utilitas tanggal & waktu (Bahasa Indonesia) ─── */
-    const DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni',
-                    'Juli','Agustus','September','Oktober','November','Desember'];
+    var DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    var MONTHS = ['Januari','Februari','Maret','April','Mei','Juni',
+                  'Juli','Agustus','September','Oktober','November','Desember'];
 
     function fmtDate(d) {
         return DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
@@ -525,31 +521,27 @@
                String(d.getMinutes()).padStart(2,'0') + ':' +
                String(d.getSeconds()).padStart(2,'0');
     }
-    function nowLabel() {
-        const n = new Date();
-        return fmtDate(n) + ' ' + fmtTime(n);
-    }
 
-    /* Jalankan clock realtime untuk overlay kamera bukti foto */
+    /* Clock realtime untuk overlay kamera */
     function tickClock() {
-        const n = new Date();
-        const elDate = document.getElementById('foto-cam-date');
-        const elTime = document.getElementById('foto-cam-time');
+        var n = new Date();
+        var elDate = document.getElementById('foto-cam-date');
+        var elTime = document.getElementById('foto-cam-time');
         if (elDate) elDate.textContent = fmtDate(n);
         if (elTime) elTime.textContent = fmtTime(n);
     }
     tickClock();
     setInterval(tickClock, 1000);
 
-    /* ─── Bakar timestamp ke frame canvas ─── */
+    /* Bakar timestamp ke frame canvas foto */
     function stampCanvas(ctx, cw, ch) {
-        const n   = new Date();
-        const txt1 = fmtDate(n);
-        const txt2 = fmtTime(n);
+        var n    = new Date();
+        var txt1 = fmtDate(n);
+        var txt2 = fmtTime(n);
         ctx.save();
         ctx.font = '13px ui-monospace, monospace';
-        const pad = 8, lh = 18, boxH = lh * 2 + pad;
-        const boxW = Math.max(ctx.measureText(txt1).width, ctx.measureText(txt2).width) + pad * 2;
+        var pad = 8, lh = 18, boxH = lh * 2 + pad;
+        var boxW = Math.max(ctx.measureText(txt1).width, ctx.measureText(txt2).width) + pad * 2;
         ctx.fillStyle = 'rgba(0,0,0,0.55)';
         ctx.fillRect(pad, ch - boxH - pad, boxW, boxH);
         ctx.fillStyle = '#ffffff';
@@ -559,61 +551,175 @@
         return { date: txt1, time: txt2 };
     }
 
-    /* ─── Kamera Bukti Foto ─── */
-    let fotoStream = null;
+    /* ─── Signature Pad ─────────────────────────────────────────────────────
+       Pendekatan sederhana: TIDAK ada DPR scaling, TIDAK ada ResizeObserver,
+       TIDAK ada initCanvas. Canvas pakai ukuran tetap via CSS (width:100%,
+       height:170px). Koordinat diambil langsung dari getBoundingClientRect()
+       relatif CSS px — konsisten antara draw dan redraw.
+    ──────────────────────────────────────────────────────────────────────── */
 
-    const fotoVideo      = document.getElementById('foto-video');
-    const fotoCamOff     = document.getElementById('foto-cam-off');
-    const fotoBtnStart   = document.getElementById('foto-btn-start');
-    const fotoBtnSnap    = document.getElementById('foto-btn-snap');
-    const fotoBtnStop    = document.getElementById('foto-btn-stop');
-    const fotoCamStatus  = document.getElementById('foto-cam-status');
-    const fotoRecDot     = document.getElementById('foto-rec-dot');
-    const fotoSnapResult = document.getElementById('foto-snap-result');
-    const fotoSnapImg    = document.getElementById('foto-snap-img');
-    const fotoSnapTs     = document.getElementById('foto-snap-ts');
-    const fotoBtnClear   = document.getElementById('foto-btn-clear-snap');
-    const fotoCamData    = document.getElementById('foto-cam-data');
-    const fotoCanvas     = document.getElementById('foto-hidden-canvas');
+    var canvas   = document.getElementById('signature-canvas');
+    var sigCtx   = canvas.getContext('2d');
+    var sigInput = document.getElementById('signature-data');
 
-    fotoBtnStart.addEventListener('click', async function () {
-        try {
-            fotoStream = await navigator.mediaDevices.getUserMedia(
-                { video: { facingMode: 'environment' }, audio: false }
-            );
-            fotoVideo.srcObject = fotoStream;
-            fotoCamOff.style.display    = 'none';
-            fotoBtnStart.style.display  = 'none';
-            fotoBtnSnap.style.display   = '';
-            fotoBtnStop.style.display   = '';
-            fotoRecDot.classList.add('live');
-            fotoCamStatus.textContent   = 'Kamera aktif';
-        } catch (err) {
-            fotoCamStatus.textContent = 'Akses kamera ditolak atau tidak tersedia.';
+    /* Set ukuran canvas internal = ukuran CSS setelah layout selesai */
+    function syncCanvasSize() {
+        var w = canvas.offsetWidth  || 600;
+        var h = canvas.offsetHeight || 170;
+        if (canvas.width !== w || canvas.height !== h) {
+            canvas.width  = w;
+            canvas.height = h;
+            redrawStrokes(); /* gambar ulang setelah resize */
         }
+    }
+
+    var drawing = false;
+    var strokes = []; /* Array<Array<{x,y}>> dalam CSS px */
+    var current = [];
+
+    function redrawStrokes() {
+        sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+        strokes.forEach(function (stroke) {
+            if (stroke.length < 2) return;
+            sigCtx.beginPath();
+            sigCtx.moveTo(stroke[0].x, stroke[0].y);
+            for (var i = 1; i < stroke.length; i++) {
+                sigCtx.lineTo(stroke[i].x, stroke[i].y);
+            }
+            sigCtx.strokeStyle = '#1e293b';
+            sigCtx.lineWidth   = 2.2;
+            sigCtx.lineCap     = 'round';
+            sigCtx.lineJoin    = 'round';
+            sigCtx.stroke();
+        });
+    }
+
+    function saveSignature() {
+        sigInput.value = strokes.length ? canvas.toDataURL('image/png') : '';
+    }
+
+    function getPos(e) {
+        var rect = canvas.getBoundingClientRect();
+        var src  = e.touches ? e.touches[0] : e;
+        return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+    }
+
+    function onStartDraw(e) {
+        e.preventDefault();
+        syncCanvasSize(); /* pastikan ukuran benar sebelum mulai gambar */
+        drawing = true;
+        current = [];
+        canvas.classList.add('drawing');
+        var p = getPos(e);
+        sigCtx.beginPath();
+        sigCtx.moveTo(p.x, p.y);
+        current.push(p);
+    }
+
+    function onDraw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        var p = getPos(e);
+        sigCtx.lineTo(p.x, p.y);
+        sigCtx.strokeStyle = '#1e293b';
+        sigCtx.lineWidth   = 2.2;
+        sigCtx.lineCap     = 'round';
+        sigCtx.lineJoin    = 'round';
+        sigCtx.stroke();
+        current.push(p);
+    }
+
+    function onEndDraw() {
+        if (!drawing) return;
+        drawing = false;
+        canvas.classList.remove('drawing');
+        if (current.length > 0) {
+            strokes.push(current.slice());
+            current = [];
+            saveSignature();
+        }
+    }
+
+    canvas.addEventListener('mousedown',  onStartDraw);
+    canvas.addEventListener('mousemove',  onDraw);
+    canvas.addEventListener('mouseup',    onEndDraw);
+    canvas.addEventListener('mouseleave', onEndDraw);
+    canvas.addEventListener('touchstart', onStartDraw, { passive: false });
+    canvas.addEventListener('touchmove',  onDraw,      { passive: false });
+    canvas.addEventListener('touchend',   onEndDraw);
+
+    document.getElementById('btn-undo').addEventListener('click', function () {
+        strokes.pop();
+        redrawStrokes();
+        saveSignature();
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', function () {
+        strokes = [];
+        current = [];
+        sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+        sigInput.value = '';
+    });
+
+    /* Sinkronisasi ukuran canvas satu kali saat halaman siap */
+    syncCanvasSize();
+
+    /* ─── Kamera Bukti Foto ─── */
+    var fotoStream = null;
+
+    var fotoVideo      = document.getElementById('foto-video');
+    var fotoCamOff     = document.getElementById('foto-cam-off');
+    var fotoBtnStart   = document.getElementById('foto-btn-start');
+    var fotoBtnSnap    = document.getElementById('foto-btn-snap');
+    var fotoBtnStop    = document.getElementById('foto-btn-stop');
+    var fotoCamStatus  = document.getElementById('foto-cam-status');
+    var fotoRecDot     = document.getElementById('foto-rec-dot');
+    var fotoSnapResult = document.getElementById('foto-snap-result');
+    var fotoSnapImg    = document.getElementById('foto-snap-img');
+    var fotoSnapTs     = document.getElementById('foto-snap-ts');
+    var fotoBtnClear   = document.getElementById('foto-btn-clear-snap');
+    var fotoCamData    = document.getElementById('foto-cam-data');
+    var fotoCanvas     = document.getElementById('foto-hidden-canvas');
+
+    fotoBtnStart.addEventListener('click', function () {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+            .then(function (stream) {
+                fotoStream = stream;
+                fotoVideo.srcObject = stream;
+                fotoCamOff.style.display   = 'none';
+                fotoBtnStart.style.display = 'none';
+                fotoBtnSnap.style.display  = '';
+                fotoBtnStop.style.display  = '';
+                fotoRecDot.classList.add('live');
+                fotoCamStatus.textContent  = 'Kamera aktif';
+            })
+            .catch(function () {
+                fotoCamStatus.textContent = 'Akses kamera ditolak atau tidak tersedia.';
+            });
     });
 
     fotoBtnStop.addEventListener('click', function () {
         if (fotoStream) { fotoStream.getTracks().forEach(function (t) { t.stop(); }); fotoStream = null; }
-        fotoVideo.srcObject   = null;
+        fotoVideo.srcObject        = null;
         fotoBtnStart.style.display = '';
         fotoBtnSnap.style.display  = 'none';
         fotoBtnStop.style.display  = 'none';
         fotoRecDot.classList.remove('live');
         fotoCamStatus.textContent  = '';
+        fotoCamOff.style.display   = '';
     });
 
     fotoBtnSnap.addEventListener('click', function () {
-        const w = fotoVideo.videoWidth  || 640;
-        const h = fotoVideo.videoHeight || 480;
+        var w = fotoVideo.videoWidth  || 640;
+        var h = fotoVideo.videoHeight || 480;
         fotoCanvas.width  = w;
         fotoCanvas.height = h;
-        const ctx = fotoCanvas.getContext('2d');
+        var ctx = fotoCanvas.getContext('2d');
         ctx.drawImage(fotoVideo, 0, 0, w, h);
-        const stamp = stampCanvas(ctx, w, h);
-        const dataUrl = fotoCanvas.toDataURL('image/jpeg', 0.92);
-        fotoCamData.value = dataUrl;
-        fotoSnapImg.src   = dataUrl;
+        var stamp = stampCanvas(ctx, w, h);
+        var dataUrl = fotoCanvas.toDataURL('image/jpeg', 0.92);
+        fotoCamData.value     = dataUrl;
+        fotoSnapImg.src       = dataUrl;
         fotoSnapTs.textContent = stamp.date + ' ' + stamp.time;
         fotoSnapResult.classList.remove('hidden');
     });
@@ -625,37 +731,34 @@
     });
 
     /* ─── Tab Bukti Foto ─── */
-    const fotoTabCam    = document.getElementById('foto-tab-cam');
-    const fotoTabUpload = document.getElementById('foto-tab-upload');
-    const fotoPanelCam  = document.getElementById('foto-panel-cam');
-    const fotoPanelUp   = document.getElementById('foto-panel-upload');
+    var fotoTabCam    = document.getElementById('foto-tab-cam');
+    var fotoTabUpload = document.getElementById('foto-tab-upload');
+    var fotoPanelCam  = document.getElementById('foto-panel-cam');
+    var fotoPanelUp   = document.getElementById('foto-panel-upload');
 
-    var STYLE_BTN_ACTIVE   = 'border:1.5px solid #2563eb;background:#2563eb;color:#fff;';
-    var STYLE_BTN_INACTIVE = 'border:1.5px solid #d1d5db;background:#f3f4f6;color:#374151;';
-    var STYLE_BTN_BASE     = 'display:inline-flex;align-items:center;gap:6px;padding:7px 14px;' +
-                             'font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;' +
-                             'transition:background .15s,border-color .15s,transform .1s;' +
-                             'user-select:none;-webkit-tap-highlight-color:transparent;' +
-                             'white-space:nowrap;line-height:1.4;';
+    var STYLE_BASE     = 'display:inline-flex;align-items:center;gap:6px;padding:7px 14px;' +
+                         'font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;' +
+                         'transition:background .15s,border-color .15s,transform .1s;' +
+                         'user-select:none;-webkit-tap-highlight-color:transparent;' +
+                         'white-space:nowrap;line-height:1.4;';
+    var STYLE_ACTIVE   = 'border:1.5px solid #2563eb;background:#2563eb;color:#fff;';
+    var STYLE_INACTIVE = 'border:1.5px solid #d1d5db;background:#f3f4f6;color:#374151;';
 
-    function setTabActive(btn) {
-        btn.setAttribute('style', STYLE_BTN_BASE + STYLE_BTN_ACTIVE);
-    }
-    function setTabInactive(btn) {
-        btn.setAttribute('style', STYLE_BTN_BASE + STYLE_BTN_INACTIVE);
-    }
+    function setActive(btn)   { btn.setAttribute('style', STYLE_BASE + STYLE_ACTIVE);   }
+    function setInactive(btn) { btn.setAttribute('style', STYLE_BASE + STYLE_INACTIVE); }
 
     fotoTabCam.addEventListener('click', function () {
-        setTabActive(fotoTabCam);
-        setTabInactive(fotoTabUpload);
+        setActive(fotoTabCam);
+        setInactive(fotoTabUpload);
         fotoPanelCam.classList.remove('hidden');
         fotoPanelUp.classList.add('hidden');
         document.getElementById('photo_evidence').value = '';
         document.getElementById('foto-upload-preview').classList.add('hidden');
     });
+
     fotoTabUpload.addEventListener('click', function () {
-        setTabActive(fotoTabUpload);
-        setTabInactive(fotoTabCam);
+        setActive(fotoTabUpload);
+        setInactive(fotoTabCam);
         fotoPanelUp.classList.remove('hidden');
         fotoPanelCam.classList.add('hidden');
         fotoCamData.value = '';
@@ -663,17 +766,17 @@
     });
 
     /* Drop-zone upload foto */
-    const fotoDropZone   = document.getElementById('foto-drop-zone');
-    const fotoFileInput  = document.getElementById('photo_evidence');
-    const fotoUpPrev     = document.getElementById('foto-upload-preview');
-    const fotoUpImg      = document.getElementById('foto-upload-img');
-    const fotoUpName     = document.getElementById('foto-upload-name');
-    const fotoBtnRemUp   = document.getElementById('foto-btn-remove-upload');
+    var fotoDropZone  = document.getElementById('foto-drop-zone');
+    var fotoFileInput = document.getElementById('photo_evidence');
+    var fotoUpPrev    = document.getElementById('foto-upload-preview');
+    var fotoUpImg     = document.getElementById('foto-upload-img');
+    var fotoUpName    = document.getElementById('foto-upload-name');
+    var fotoBtnRemUp  = document.getElementById('foto-btn-remove-upload');
 
-    fotoDropZone.addEventListener('click', function () { fotoFileInput.click(); });
-    fotoDropZone.addEventListener('dragover',  function (e) { e.preventDefault(); fotoDropZone.classList.add('dragover'); });
-    fotoDropZone.addEventListener('dragleave', function ()  { fotoDropZone.classList.remove('dragover'); });
-    fotoDropZone.addEventListener('drop', function (e) {
+    fotoDropZone.addEventListener('click',    function ()  { fotoFileInput.click(); });
+    fotoDropZone.addEventListener('dragover', function (e) { e.preventDefault(); fotoDropZone.classList.add('dragover'); });
+    fotoDropZone.addEventListener('dragleave',function ()  { fotoDropZone.classList.remove('dragover'); });
+    fotoDropZone.addEventListener('drop',     function (e) {
         e.preventDefault(); fotoDropZone.classList.remove('dragover');
         handleUploadFile(e.dataTransfer.files[0], fotoFileInput, fotoUpImg, fotoUpName, fotoUpPrev, 2);
     });
@@ -688,25 +791,28 @@
     });
 
     /* ─── Tab Tanda Tangan ─── */
-    const sigTabPad    = document.getElementById('sig-tab-pad');
-    const sigTabUpload = document.getElementById('sig-tab-upload');
-    const sigPanelPad  = document.getElementById('sig-panel-pad');
-    const sigPanelUp   = document.getElementById('sig-panel-upload');
+    var sigTabPad    = document.getElementById('sig-tab-pad');
+    var sigTabUpload = document.getElementById('sig-tab-upload');
+    var sigPanelPad  = document.getElementById('sig-panel-pad');
+    var sigPanelUp   = document.getElementById('sig-panel-upload');
+    var sigFileInput = document.getElementById('signature-upload-input');
 
     function switchSigTab(active) {
         if (active === 'pad') {
-            setTabActive(sigTabPad);
-            setTabInactive(sigTabUpload);
+            setActive(sigTabPad);
+            setInactive(sigTabUpload);
             sigPanelPad.classList.remove('hidden');
             sigPanelUp.classList.add('hidden');
-            document.getElementById('signature-upload-input').value = '';
+            sigFileInput.value = '';
             document.getElementById('sig-upload-preview').classList.add('hidden');
+            /* Sinkronisasi ukuran canvas saat tab kembali ditampilkan */
+            syncCanvasSize();
         } else {
-            setTabActive(sigTabUpload);
-            setTabInactive(sigTabPad);
+            setActive(sigTabUpload);
+            setInactive(sigTabPad);
             sigPanelUp.classList.remove('hidden');
             sigPanelPad.classList.add('hidden');
-            document.getElementById('signature-data').value = '';
+            sigInput.value = '';
         }
     }
 
@@ -714,17 +820,16 @@
     sigTabUpload.addEventListener('click', function () { switchSigTab('upload'); });
 
     /* Drop-zone upload TTD */
-    const sigDropZone  = document.getElementById('sig-drop-zone');
-    const sigFileInput = document.getElementById('signature-upload-input');
-    const sigUpPrev    = document.getElementById('sig-upload-preview');
-    const sigUpImg     = document.getElementById('sig-upload-img');
-    const sigUpName    = document.getElementById('sig-upload-name');
-    const sigBtnRemUp  = document.getElementById('sig-btn-remove-upload');
+    var sigDropZone = document.getElementById('sig-drop-zone');
+    var sigUpPrev   = document.getElementById('sig-upload-preview');
+    var sigUpImg    = document.getElementById('sig-upload-img');
+    var sigUpName   = document.getElementById('sig-upload-name');
+    var sigBtnRemUp = document.getElementById('sig-btn-remove-upload');
 
-    sigDropZone.addEventListener('click', function () { sigFileInput.click(); });
-    sigDropZone.addEventListener('dragover',  function (e) { e.preventDefault(); sigDropZone.classList.add('dragover'); });
-    sigDropZone.addEventListener('dragleave', function ()  { sigDropZone.classList.remove('dragover'); });
-    sigDropZone.addEventListener('drop', function (e) {
+    sigDropZone.addEventListener('click',    function ()  { sigFileInput.click(); });
+    sigDropZone.addEventListener('dragover', function (e) { e.preventDefault(); sigDropZone.classList.add('dragover'); });
+    sigDropZone.addEventListener('dragleave',function ()  { sigDropZone.classList.remove('dragover'); });
+    sigDropZone.addEventListener('drop',     function (e) {
         e.preventDefault(); sigDropZone.classList.remove('dragover');
         handleUploadFile(e.dataTransfer.files[0], sigFileInput, sigUpImg, sigUpName, sigUpPrev, 1);
     });
@@ -738,109 +843,39 @@
         sigUpPrev.classList.add('hidden');
     });
 
-    /* ─── Helper: tampilkan preview file upload ─── */
+    /* ─── Helper: preview file upload ─── */
     function handleUploadFile(file, input, imgEl, nameEl, wrapEl, maxMb) {
         if (!file || !file.type.startsWith('image/')) return;
         if (file.size > maxMb * 1024 * 1024) {
             alert('Ukuran file melebihi ' + maxMb + ' MB.');
             return;
         }
-        try { const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files; } catch (e) {}
-        const reader = new FileReader();
+        try { var dt = new DataTransfer(); dt.items.add(file); input.files = dt.files; } catch (e) {}
+        var reader = new FileReader();
         reader.onload = function (ev) {
-            imgEl.src  = ev.target.result;
+            imgEl.src          = ev.target.result;
             nameEl.textContent = file.name;
             wrapEl.classList.remove('hidden');
         };
         reader.readAsDataURL(file);
     }
 
-    /* ─── Signature Pad ─── */
-    const canvas  = document.getElementById('signature-canvas');
-    const ctx     = canvas.getContext('2d');
-    const sigInput = document.getElementById('signature-data');
-    let drawing = false, strokes = [], current = [];
-
-    function resizeCanvas() {
-        const rect = canvas.getBoundingClientRect();
-        const dpr  = window.devicePixelRatio || 1;
-        canvas.width  = rect.width  * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-        if (strokes.length) redraw();
-    }
-    function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const src  = e.touches ? e.touches[0] : e;
-        return { x: src.clientX - rect.left, y: src.clientY - rect.top };
-    }
-    function startDraw(e) {
-        e.preventDefault(); drawing = true; current = [];
-        canvas.classList.add('drawing');
-        const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); current.push(p);
-    }
-    function draw(e) {
-        if (!drawing) return; e.preventDefault();
-        const p = getPos(e);
-        ctx.lineTo(p.x, p.y);
-        ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2.2;
-        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
-        current.push(p);
-    }
-    function endDraw() {
-        if (!drawing) return; drawing = false;
-        canvas.classList.remove('drawing');
-        if (current.length) { strokes.push([...current]); current = []; saveSignature(); }
-    }
-    function redraw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        strokes.forEach(function (stroke) {
-            if (!stroke.length) return;
-            ctx.beginPath(); ctx.moveTo(stroke[0].x, stroke[0].y);
-            stroke.forEach(function (p) { ctx.lineTo(p.x, p.y); });
-            ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2.2;
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
-        });
-    }
-    function saveSignature() {
-        sigInput.value = strokes.length ? canvas.toDataURL('image/png') : '';
-    }
-
-    canvas.addEventListener('mousedown',  startDraw);
-    canvas.addEventListener('mousemove',  draw);
-    canvas.addEventListener('mouseup',    endDraw);
-    canvas.addEventListener('mouseleave', endDraw);
-    canvas.addEventListener('touchstart', startDraw, { passive: false });
-    canvas.addEventListener('touchmove',  draw,      { passive: false });
-    canvas.addEventListener('touchend',   endDraw);
-
-    document.getElementById('btn-undo').addEventListener('click', function () {
-        strokes.pop(); redraw(); saveSignature();
-    });
-    document.getElementById('btn-clear').addEventListener('click', function () {
-        strokes = []; current = [];
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        sigInput.value = '';
-    });
-
-    new ResizeObserver(resizeCanvas).observe(canvas);
-
     /* ─── Submit: nonaktifkan field yang tidak dipakai ─── */
     document.getElementById('report-form').addEventListener('submit', function () {
-        const padActive = !sigPanelPad.classList.contains('hidden');
-        const upActive  = !sigPanelUp.classList.contains('hidden');
+        var padActive = !sigPanelPad.classList.contains('hidden');
+        var upActive  = !sigPanelUp.classList.contains('hidden');
 
-        if (!padActive) sigInput.disabled = true;
-        if (!upActive)  sigFileInput.disabled = true;
+        if (!padActive) sigInput.disabled      = true;
+        if (!upActive)  sigFileInput.disabled  = true;
 
-        /* Bukti foto: jika panel kamera aktif, nonaktifkan file upload */
+        /* Bukti foto */
         if (!fotoPanelUp.classList.contains('hidden')) {
-            fotoCamData.disabled = true;
+            fotoCamData.disabled   = true;
         } else {
             fotoFileInput.disabled = true;
         }
 
-        /* Matikan stream kamera bukti foto */
+        /* Matikan stream kamera */
         if (fotoStream) fotoStream.getTracks().forEach(function (t) { t.stop(); });
     });
 

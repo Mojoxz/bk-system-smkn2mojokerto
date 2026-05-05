@@ -45,6 +45,7 @@ zoom in masih belum bisa
 HARUSNYA ADA TOLAK DAN REJECT DI VIEW VIOLATION
 
 REVISI USER TAMPILAN =
-- JADIKAN SIDE BAR JANGAN NAVBAR DIATAS
-- ADA TANDA TANGAN SEPERTI DI ADMIN
-- REDESAIN DASHBOARD.
+- menambahkan Foto profile
+- ada error di tanda tangan langsung
+- detail pelanggaran
+- redesain side bar ada foto profil

@@ -31,7 +31,9 @@ class StudentViolationReportController extends Controller
             'violation_type_id' => ['required', 'exists:violation_types,id'],
             'description'       => ['required', 'string', 'max:1000'],
             'photo_evidence'    => ['nullable', 'image', 'max:2048'],
+            'photo_cam_data'    => ['nullable', 'string'],
             'signature_upload'  => ['nullable', 'image', 'max:1024'],
+            'signature'         => ['nullable', 'string'],   // base64 dari canvas pad
         ], [
             'violation_type_id.required' => 'Jenis pelanggaran wajib dipilih.',
             'violation_type_id.exists'   => 'Jenis pelanggaran tidak valid.',
@@ -48,28 +50,41 @@ class StudentViolationReportController extends Controller
 
         // ── Simpan foto bukti ──────────────────────────────────
         $photoPath = null;
+
         if ($request->hasFile('photo_evidence')) {
+            // Upload file biasa
             $photoPath = $request->file('photo_evidence')
                             ->store('violations/photos', 'public');
+
+        } elseif ($request->filled('photo_cam_data')) {
+            // Base64 dari kamera langsung
+            $base64 = $request->input('photo_cam_data');
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64, $matches)) {
+                $imageData = base64_decode(substr($base64, strpos($base64, ',') + 1));
+                $ext       = in_array(strtolower($matches[1]), ['jpeg', 'jpg']) ? 'jpg' : 'png';
+                $filename  = 'violations/photos/' . uniqid('foto_', true) . '.' . $ext;
+                Storage::disk('public')->put($filename, $imageData);
+                $photoPath = $filename;
+            }
         }
 
         // ── Simpan tanda tangan ───────────────────────────────
-        // Prioritas A: file upload (termasuk hasil konversi canvas→blob dari JS)
-        // Prioritas B: base64 string (fallback jika browser tidak support DataTransfer API)
+        // Prioritas A: file upload
+        // Prioritas B: base64 dari canvas pad (field name="signature")
         $signaturePath = null;
 
         if ($request->hasFile('signature_upload')) {
-            // A) File dari upload / konversi canvas blob
+            // A) File upload
             $signaturePath = $request->file('signature_upload')
                                 ->store('violations/signatures', 'public');
 
-        } elseif ($request->filled('signature_base64')) {
-            // B) Fallback base64 — decode lalu simpan sebagai file
-            $base64 = $request->input('signature_base64');
+        } elseif ($request->filled('signature')) {
+            // B) Base64 dari signature pad canvas
+            $base64 = $request->input('signature');
 
             if (preg_match('/^data:image\/(\w+);base64,/', $base64, $matches)) {
                 $imageData = base64_decode(substr($base64, strpos($base64, ',') + 1));
-                $ext       = in_array($matches[1], ['jpeg', 'jpg']) ? 'jpg' : 'png';
+                $ext       = in_array(strtolower($matches[1]), ['jpeg', 'jpg']) ? 'jpg' : 'png';
                 $filename  = 'violations/signatures/' . uniqid('sig_', true) . '.' . $ext;
 
                 Storage::disk('public')->put($filename, $imageData);
