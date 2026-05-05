@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard') - BK SMKN 2 Mojokerto</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 <body class="bg-gray-100 min-h-screen">
 
@@ -194,7 +195,45 @@
         </main>
     </div>
 
+    {{-- ═══════════════════════════════
+         SWEETALERT2 SCRIPT
+    ════════════════════════════════ --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script>
+        /* ── SweetAlert: session flash ── */
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: @json(session('success')),
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#1d4ed8',
+                timer: 5000,
+                timerProgressBar: true,
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: @json(session('error')),
+                confirmButtonText: 'Tutup',
+                confirmButtonColor: '#dc2626',
+            });
+        @endif
+
+        @if(session('warning'))
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian!',
+                text: @json(session('warning')),
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#d97706',
+            });
+        @endif
+
+        /* ── Sidebar & dropdown ── */
         function openSidebar() {
             document.getElementById('sidebar').classList.remove('-translate-x-full');
             document.getElementById('sidebar-overlay').classList.remove('hidden');

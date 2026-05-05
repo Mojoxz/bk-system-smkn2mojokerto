@@ -4,6 +4,10 @@
 @section('heading', 'Lapor Pelanggaran')
 @section('subheading', 'Isi formulir berikut untuk melaporkan pelanggaran')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@endpush
+
 @section('content')
 
     @if($errors->any())
@@ -74,7 +78,7 @@
                 </div>
 
                 <div style="display:flex;gap:8px;">
-                    <button type="submit"
+                    <button type="submit" id="btn-submit"
                             style="background:#1d4ed8;color:#fff;font-size:13px;font-weight:500;padding:10px 22px;border-radius:8px;border:none;cursor:pointer;">
                         Kirim Laporan
                     </button>
@@ -291,9 +295,38 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script>
 (function () {
     'use strict';
+
+    /* ── Tampilkan SweetAlert jika laporan berhasil dikirim ── */
+    @if(session('success'))
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'success',
+            title: 'Laporan Terkirim!',
+            text: '{{ session('success') }}',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#1d4ed8',
+            timer: 5000,
+            timerProgressBar: true,
+        });
+    });
+    @endif
+
+    /* ── Tampilkan SweetAlert jika ada error session ── */
+    @if(session('error'))
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: '{{ session('error') }}',
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#dc2626',
+        });
+    });
+    @endif
 
     /* ── Responsif: satu kolom di layar sempit ── */
     function applyGrid() {
@@ -540,9 +573,9 @@
     };
 
     /* ══════════════════════════════════════
-       SUBMIT
+       SUBMIT — dengan loading SweetAlert
     ══════════════════════════════════════ */
-    document.getElementById('report-form').addEventListener('submit', function () {
+    document.getElementById('report-form').addEventListener('submit', function (e) {
         var padVis   = document.getElementById('sig-panel-pad').style.display    !== 'none';
         var sigUpVis = document.getElementById('sig-panel-upload').style.display !== 'none';
         var camVis   = document.getElementById('foto-panel-cam').style.display   !== 'none';
@@ -553,6 +586,13 @@
         else           document.getElementById('photo_evidence').disabled    = true;
 
         if (fotoStream) fotoStream.getTracks().forEach(function (t) { t.stop(); });
+
+        /* Disable tombol agar tidak double submit */
+        var btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.textContent = 'Mengirim...';
+        btn.style.opacity = '0.7';
+        btn.style.cursor = 'not-allowed';
     });
 
 })();
