@@ -22,6 +22,7 @@ Route::prefix('student')->name('student.')->group(function () {
         Route::get('/profile', [StudentDashboardController::class, 'profile'])->name('profile');
         Route::put('/profile', [StudentDashboardController::class, 'updateProfile'])->name('profile.update');
         Route::get('/violations', [StudentDashboardController::class, 'violations'])->name('violations');
+        Route::get('/violations/{violation}', [StudentViolationReportController::class, 'show'])->name('violations.show');
 
         // Lapor Pelanggaran — ditangani controller tersendiri
         Route::get('/report-violation', [StudentViolationReportController::class, 'create'])->name('report.form');

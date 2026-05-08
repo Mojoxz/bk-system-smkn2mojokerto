@@ -42,36 +42,74 @@
         {{-- Navigation --}}
         <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
 
+            {{-- Dashboard --}}
             <a href="{{ route('student.dashboard') }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
                       {{ request()->routeIs('student.dashboard') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
-                <svg class="w-4.5 h-4.5 flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
                 Dashboard
             </a>
 
-            <a href="{{ route('student.violations') }}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                      {{ request()->routeIs('student.violations') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Riwayat Pelanggaran
-            </a>
+            {{-- Pelanggaran — dropdown --}}
+            @php
+                $violationsActive = request()->routeIs('student.violations') || request()->routeIs('student.violations.show') || request()->routeIs('student.report.*');
+            @endphp
 
-            <a href="{{ route('student.report.form') }}"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                      {{ request()->routeIs('student.report.*') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Lapor Pelanggaran
-            </a>
+            <div x-data="{ open: {{ $violationsActive ? 'true' : 'false' }} }">
 
+                {{-- Trigger --}}
+                <button @click="open = !open"
+                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                               {{ $violationsActive ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span class="flex-1 text-left">Pelanggaran</span>
+                    <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-200"
+                         :class="open ? 'rotate-180' : ''"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                {{-- Sub-menu --}}
+                <div x-show="open"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="mt-0.5 ml-3 pl-5 border-l border-blue-500 space-y-0.5">
+
+                    <a href="{{ route('student.violations') }}"
+                       class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                              {{ request()->routeIs('student.violations') || request()->routeIs('student.violations.show') ? 'bg-white/20 text-white' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M4 6h16M4 10h16M4 14h8"/>
+                        </svg>
+                        Riwayat Pelanggaran
+                    </a>
+
+                    <a href="{{ route('student.report.form') }}"
+                       class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                              {{ request()->routeIs('student.report.*') ? 'bg-white/20 text-white' : 'text-blue-200 hover:bg-white/10 hover:text-white' }}">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Lapor Pelanggaran
+                    </a>
+
+                </div>
+            </div>
+
+            {{-- Profil --}}
             <a href="{{ route('student.profile') }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
                       {{ request()->routeIs('student.profile') ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
@@ -81,6 +119,7 @@
                 </svg>
                 Profil Saya
             </a>
+
         </nav>
 
         {{-- Logout --}}
@@ -105,7 +144,7 @@
     ════════════════════════════════ --}}
     <div class="lg:pl-64 min-h-screen flex flex-col">
 
-        {{-- Top bar (semua ukuran layar) --}}
+        {{-- Top bar --}}
         <header class="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
 
             {{-- Kiri: hamburger (mobile) --}}
@@ -146,7 +185,6 @@
                 <div id="profile-dropdown"
                      class="hidden absolute right-0 mt-1.5 w-52 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
 
-                    {{-- Info --}}
                     <div class="px-4 py-3 border-b border-gray-100">
                         <p class="text-sm font-medium text-gray-900 truncate">{{ Auth::guard('student')->user()->name }}</p>
                         <p class="text-xs text-gray-400 mt-0.5">NISN: {{ Auth::guard('student')->user()->nisn }}</p>
@@ -181,7 +219,6 @@
         {{-- Page content --}}
         <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-5xl w-full mx-auto">
 
-            {{-- Page heading --}}
             @hasSection('heading')
             <div class="mb-6">
                 <h1 class="text-xl font-semibold text-gray-900">@yield('heading')</h1>

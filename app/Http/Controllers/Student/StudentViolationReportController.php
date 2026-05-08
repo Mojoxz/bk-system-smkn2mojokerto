@@ -33,7 +33,7 @@ class StudentViolationReportController extends Controller
             'photo_evidence'    => ['nullable', 'image', 'max:2048'],
             'photo_cam_data'    => ['nullable', 'string'],
             'signature_upload'  => ['nullable', 'image', 'max:1024'],
-            'signature'         => ['nullable', 'string'],   // base64 dari canvas pad
+            'signature'         => ['nullable', 'string'],
         ], [
             'violation_type_id.required' => 'Jenis pelanggaran wajib dipilih.',
             'violation_type_id.exists'   => 'Jenis pelanggaran tidak valid.',
@@ -52,12 +52,10 @@ class StudentViolationReportController extends Controller
         $photoPath = null;
 
         if ($request->hasFile('photo_evidence')) {
-            // Upload file biasa
             $photoPath = $request->file('photo_evidence')
                             ->store('violations/photos', 'public');
 
         } elseif ($request->filled('photo_cam_data')) {
-            // Base64 dari kamera langsung
             $base64 = $request->input('photo_cam_data');
             if (preg_match('/^data:image\/(\w+);base64,/', $base64, $matches)) {
                 $imageData = base64_decode(substr($base64, strpos($base64, ',') + 1));
@@ -69,17 +67,13 @@ class StudentViolationReportController extends Controller
         }
 
         // ── Simpan tanda tangan ───────────────────────────────
-        // Prioritas A: file upload
-        // Prioritas B: base64 dari canvas pad (field name="signature")
         $signaturePath = null;
 
         if ($request->hasFile('signature_upload')) {
-            // A) File upload
             $signaturePath = $request->file('signature_upload')
                                 ->store('violations/signatures', 'public');
 
         } elseif ($request->filled('signature')) {
-            // B) Base64 dari signature pad canvas
             $base64 = $request->input('signature');
 
             if (preg_match('/^data:image\/(\w+);base64,/', $base64, $matches)) {
@@ -107,7 +101,27 @@ class StudentViolationReportController extends Controller
         ]);
 
         return redirect()
-            ->route('student.dashboard')
+            ->route('student.violations')
             ->with('success', 'Laporan pelanggaran berhasil dikirim dan sedang menunggu verifikasi.');
+    }
+
+    /**
+     * Tampilkan detail pelanggaran milik siswa yang sedang login.
+     */
+    public function show(Violation $violation)
+    {
+        $student = auth('student')->user();
+
+        // Pastikan siswa hanya bisa lihat pelanggaran miliknya sendiri
+        if ($violation->student_id !== $student->id) {
+            abort(403, 'Kamu tidak memiliki akses ke pelanggaran ini.');
+        }
+
+        $violation->load([
+            'violationType.category',
+            'admin',
+        ]);
+
+        return view('student.violation-detail', compact('violation'));
     }
 }
