@@ -37,6 +37,7 @@
                         <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Jenis</th>
                         <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Poin</th>
                         <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -69,10 +70,19 @@
                                     @endif
                                 </span>
                             </td>
+                            <td class="px-5 py-4 whitespace-nowrap">
+                                <a href="{{ route('student.violations.show', $violation->id) }}"
+                                   class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                                    Lihat Detail
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-5 py-12 text-center text-sm text-gray-400">
+                            <td colspan="6" class="px-5 py-12 text-center text-sm text-gray-400">
                                 Belum ada data pelanggaran
                             </td>
                         </tr>
@@ -84,7 +94,8 @@
         {{-- Mobile cards --}}
         <div class="sm:hidden divide-y divide-gray-100">
             @forelse($violations as $violation)
-                <div class="p-4">
+                <a href="{{ route('student.violations.show', $violation->id) }}"
+                   class="block p-4 hover:bg-gray-50 transition-colors">
                     <div class="flex items-start justify-between gap-3 mb-2">
                         <p class="text-sm font-medium text-gray-900">{{ $violation->violationType->name }}</p>
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0
@@ -95,16 +106,21 @@
                             @endif
                         </span>
                     </div>
-                    <div class="flex items-center gap-3 text-xs text-gray-500">
-                        <span>{{ $violation->violation_date->format('d/m/Y H:i') }}</span>
-                        <span>·</span>
-                        <span class="text-blue-600">{{ $violation->violationType->category->name }}</span>
-                        <span>·</span>
-                        <span class="{{ $violation->points >= 50 ? 'text-red-600' : ($violation->points >= 25 ? 'text-amber-600' : 'text-green-600') }} font-medium">
-                            {{ $violation->points }} poin
-                        </span>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3 text-xs text-gray-500">
+                            <span>{{ $violation->violation_date->format('d/m/Y H:i') }}</span>
+                            <span>·</span>
+                            <span class="text-blue-600">{{ $violation->violationType->category->name }}</span>
+                            <span>·</span>
+                            <span class="{{ $violation->points >= 50 ? 'text-red-600' : ($violation->points >= 25 ? 'text-amber-600' : 'text-green-600') }} font-medium">
+                                {{ $violation->points }} poin
+                            </span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </div>
-                </div>
+                </a>
             @empty
                 <div class="p-12 text-center text-sm text-gray-400">
                     Belum ada data pelanggaran
