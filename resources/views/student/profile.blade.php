@@ -14,7 +14,7 @@
             </svg>
             <div>
                 <p class="text-sm font-medium text-amber-800">Foto profil belum ditambahkan</p>
-                <p class="text-xs text-amber-600 mt-0.5">Tambahkan foto profil Anda agar akun terlihat lebih lengkap dan mudah dikenali.</p>
+                <p class="text-xs text-amber-600 mt-0.5">Tambahkan foto profil Anda agar akun terlihat lebih lengkap.</p>
             </div>
         </div>
     @endunless
@@ -23,7 +23,14 @@
     <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5">
         <h2 class="text-sm font-semibold text-gray-700 mb-4">Foto Profil</h2>
 
-        <div class="flex items-start gap-5">
+        @error('photo')
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
+                {{ $message }}
+            </div>
+        @enderror
+
+        <div class="flex items-start gap-6">
+
             {{-- Preview foto / avatar --}}
             <div class="flex-shrink-0">
                 @if($student->photo_url)
@@ -32,7 +39,7 @@
                          alt="Foto {{ $student->name }}"
                          class="w-24 h-24 rounded-full object-cover ring-4 ring-blue-50">
                 @else
-                    <div id="photo-preview-placeholder"
+                    <div id="photo-avatar"
                          class="w-24 h-24 rounded-full bg-blue-600 ring-4 ring-blue-50
                                 flex items-center justify-center">
                         <span class="text-white text-2xl font-bold">{{ $student->initials }}</span>
@@ -44,19 +51,27 @@
                 @endif
             </div>
 
-            <div class="flex-1">
-                {{-- Form upload --}}
+            <div class="flex-1 space-y-3">
+                {{-- Form upload — enctype WAJIB untuk file upload --}}
                 <form method="POST"
                       action="{{ route('student.profile.photo') }}"
-                      enctype="multipart/form-data"
-                      id="photo-upload-form">
+                      enctype="multipart/form-data">
                     @csrf
 
-                    <div class="mb-3">
+                    {{-- Input file tersembunyi, dipicu label --}}
+                    <input type="file"
+                           id="photo-input"
+                           name="photo"
+                           accept="image/jpeg,image/jpg,image/png,image/webp"
+                           class="hidden"
+                           onchange="previewPhoto(this)">
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        {{-- Label sebagai tombol "Pilih Foto" --}}
                         <label for="photo-input"
                                class="inline-flex items-center gap-2 cursor-pointer
                                       bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium
-                                      px-4 py-2 rounded-lg transition-colors">
+                                      px-4 py-2 rounded-lg transition-colors select-none">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
@@ -65,39 +80,32 @@
                             </svg>
                             Pilih Foto
                         </label>
-                        <input type="file"
-                               id="photo-input"
-                               name="photo"
-                               accept="image/jpg,image/jpeg,image/png,image/webp"
-                               class="hidden"
-                               onchange="previewPhoto(this)">
+
+                        {{-- Tombol simpan — selalu tampil, disabled jika belum pilih file --}}
+                        <button type="submit"
+                                id="photo-save-btn"
+                                class="inline-flex items-center gap-2
+                                       bg-green-600 hover:bg-green-700 disabled:bg-gray-300
+                                       disabled:cursor-not-allowed text-white text-sm font-medium
+                                       px-4 py-2 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span id="photo-save-label">Simpan Foto</span>
+                        </button>
                     </div>
 
-                    <p class="text-xs text-gray-400 mb-3">
+                    {{-- Nama file yang dipilih --}}
+                    <p id="photo-filename" class="text-xs text-gray-400">
                         Format: JPG, PNG, WEBP &nbsp;·&nbsp; Maks. 2 MB
                     </p>
 
-                    {{-- Tombol simpan (muncul setelah pilih file) --}}
-                    <button type="submit"
-                            id="photo-save-btn"
-                            class="hidden items-center gap-2 bg-green-600 hover:bg-green-700 text-white
-                                   text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Simpan Foto
-                    </button>
-
-                    @error('photo')
-                        <p class="text-xs text-red-500 mt-2">{{ $message }}</p>
-                    @enderror
                 </form>
 
-                {{-- Tombol hapus foto (hanya jika ada foto) --}}
+                {{-- Tombol hapus foto — form terpisah, hanya muncul jika ada foto --}}
                 @if($student->photo_url)
                     <form method="POST"
                           action="{{ route('student.profile.photo.delete') }}"
-                          class="mt-2"
                           onsubmit="return confirm('Yakin ingin menghapus foto profil?')">
                         @csrf
                         @method('DELETE')
@@ -161,10 +169,10 @@
             @csrf
             @method('PUT')
 
-            @if($errors->any())
+            @if($errors->has('phone') || $errors->has('address') || $errors->has('password'))
                 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
                     <ul class="space-y-0.5">
-                        @foreach($errors->all() as $error)
+                        @foreach($errors->only(['phone','address','password','password_confirmation']) as $error)
                             <li>• {{ $error }}</li>
                         @endforeach
                     </ul>
@@ -243,15 +251,15 @@ function previewPhoto(input) {
 
     const reader = new FileReader();
     reader.onload = function (e) {
-        const preview     = document.getElementById('photo-preview');
-        const placeholder = document.getElementById('photo-preview-placeholder');
-        const saveBtn     = document.getElementById('photo-save-btn');
+        const preview  = document.getElementById('photo-preview');
+        const avatar   = document.getElementById('photo-avatar');
+        const filename = document.getElementById('photo-filename');
 
         preview.src = e.target.result;
         preview.classList.remove('hidden');
+        if (avatar) avatar.classList.add('hidden');
 
-        if (placeholder) placeholder.classList.add('hidden');
-        if (saveBtn)     saveBtn.classList.replace('hidden', 'inline-flex');
+        if (filename) filename.textContent = 'File dipilih: ' + file.name;
     };
     reader.readAsDataURL(file);
 }
