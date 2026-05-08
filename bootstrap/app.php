@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'auth' => App\Http\Middleware\Authenticate::class,
+            'student.has_photo' => \App\Http\Middleware\EnsureStudentHasPhoto::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

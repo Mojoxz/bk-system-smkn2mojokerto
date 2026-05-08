@@ -6,26 +6,117 @@
 
 @section('content')
 
-    @if(session('success'))
-        <div class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-5 text-sm">
-            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+    {{-- ── Banner "foto belum ada" ── --}}
+    @unless($student->photo_url)
+        <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3.5 mb-5">
+            <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
             </svg>
-            {{ session('success') }}
+            <div>
+                <p class="text-sm font-medium text-amber-800">Foto profil belum ditambahkan</p>
+                <p class="text-xs text-amber-600 mt-0.5">Tambahkan foto profil Anda agar akun terlihat lebih lengkap dan mudah dikenali.</p>
+            </div>
         </div>
-    @endif
+    @endunless
 
-    @if($errors->any())
-        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm">
-            <ul class="space-y-0.5">
-                @foreach($errors->all() as $error)
-                    <li>• {{ $error }}</li>
-                @endforeach
-            </ul>
+    {{-- ── Section foto profil ── --}}
+    <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5">
+        <h2 class="text-sm font-semibold text-gray-700 mb-4">Foto Profil</h2>
+
+        <div class="flex items-start gap-5">
+            {{-- Preview foto / avatar --}}
+            <div class="flex-shrink-0">
+                @if($student->photo_url)
+                    <img id="photo-preview"
+                         src="{{ $student->photo_url }}"
+                         alt="Foto {{ $student->name }}"
+                         class="w-24 h-24 rounded-full object-cover ring-4 ring-blue-50">
+                @else
+                    <div id="photo-preview-placeholder"
+                         class="w-24 h-24 rounded-full bg-blue-600 ring-4 ring-blue-50
+                                flex items-center justify-center">
+                        <span class="text-white text-2xl font-bold">{{ $student->initials }}</span>
+                    </div>
+                    <img id="photo-preview"
+                         src=""
+                         alt="Preview"
+                         class="w-24 h-24 rounded-full object-cover ring-4 ring-blue-50 hidden">
+                @endif
+            </div>
+
+            <div class="flex-1">
+                {{-- Form upload --}}
+                <form method="POST"
+                      action="{{ route('student.profile.photo') }}"
+                      enctype="multipart/form-data"
+                      id="photo-upload-form">
+                    @csrf
+
+                    <div class="mb-3">
+                        <label for="photo-input"
+                               class="inline-flex items-center gap-2 cursor-pointer
+                                      bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium
+                                      px-4 py-2 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0"/>
+                            </svg>
+                            Pilih Foto
+                        </label>
+                        <input type="file"
+                               id="photo-input"
+                               name="photo"
+                               accept="image/jpg,image/jpeg,image/png,image/webp"
+                               class="hidden"
+                               onchange="previewPhoto(this)">
+                    </div>
+
+                    <p class="text-xs text-gray-400 mb-3">
+                        Format: JPG, PNG, WEBP &nbsp;·&nbsp; Maks. 2 MB
+                    </p>
+
+                    {{-- Tombol simpan (muncul setelah pilih file) --}}
+                    <button type="submit"
+                            id="photo-save-btn"
+                            class="hidden items-center gap-2 bg-green-600 hover:bg-green-700 text-white
+                                   text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Simpan Foto
+                    </button>
+
+                    @error('photo')
+                        <p class="text-xs text-red-500 mt-2">{{ $message }}</p>
+                    @enderror
+                </form>
+
+                {{-- Tombol hapus foto (hanya jika ada foto) --}}
+                @if($student->photo_url)
+                    <form method="POST"
+                          action="{{ route('student.profile.photo.delete') }}"
+                          class="mt-2"
+                          onsubmit="return confirm('Yakin ingin menghapus foto profil?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 text-red-600 hover:text-red-700
+                                       text-sm font-medium transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Hapus Foto
+                        </button>
+                    </form>
+                @endif
+            </div>
         </div>
-    @endif
+    </div>
 
-    {{-- Info section --}}
+    {{-- ── Info section ── --}}
     <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5">
         <h2 class="text-sm font-semibold text-gray-700 mb-4">Informasi Pribadi</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6 text-sm">
@@ -62,13 +153,23 @@
         </div>
     </div>
 
-    {{-- Edit form --}}
+    {{-- ── Edit form ── --}}
     <div class="bg-white rounded-xl border border-gray-200 p-5">
         <h2 class="text-sm font-semibold text-gray-700 mb-5">Edit Profil</h2>
 
         <form method="POST" action="{{ route('student.profile.update') }}" class="space-y-4">
             @csrf
             @method('PUT')
+
+            @if($errors->any())
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                    <ul class="space-y-0.5">
+                        @foreach($errors->all() as $error)
+                            <li>• {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div>
                 <label for="phone" class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Telepon</label>
@@ -125,3 +226,34 @@
     </div>
 
 @endsection
+
+@push('scripts')
+<script>
+function previewPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file  = input.files[0];
+    const maxMB = 2;
+
+    if (file.size > maxMB * 1024 * 1024) {
+        alert('Ukuran file terlalu besar. Maksimal ' + maxMB + ' MB.');
+        input.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const preview     = document.getElementById('photo-preview');
+        const placeholder = document.getElementById('photo-preview-placeholder');
+        const saveBtn     = document.getElementById('photo-save-btn');
+
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+
+        if (placeholder) placeholder.classList.add('hidden');
+        if (saveBtn)     saveBtn.classList.replace('hidden', 'inline-flex');
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+@endpush

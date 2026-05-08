@@ -50,3 +50,10 @@ REVISI USER TAMPILAN =
 - detail pelanggaran
 - redesain side bar ada foto profil
 - beri sweetalert ketika selesai menambahkan pelanggaran\
+
+PIK R =
+-konselor sebaya
+
+menambahkan field foto. dan melihat jika ada user baru belum ada foto otomatis teroute ke profil untuk add foto
+sidebar add foto
+navbar atas juga

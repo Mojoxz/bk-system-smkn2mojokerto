@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StudentResource\Pages;
 
 use App\Filament\Resources\StudentResource;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Group;
@@ -16,6 +17,19 @@ class ViewStudent extends ViewRecord
     {
         return $schema
             ->schema([
+                // ── Foto profil (read-only, hanya tampilkan) ──
+                Group::make([
+                    ImageEntry::make('photo')
+                        ->label('Foto Profil')
+                        ->disk('public')
+                        ->circular()
+                        ->defaultImageUrl(null)
+                        ->placeholder('Belum ada foto')
+                        ->columnSpanFull(),
+                ])
+                    ->columns(1),
+
+                // ── Data pribadi ──
                 Group::make([
                     TextEntry::make('nisn')->label('NISN'),
                     TextEntry::make('name')->label('Nama'),
@@ -28,6 +42,7 @@ class ViewStudent extends ViewRecord
                 ])
                     ->columns(2),
 
+                // ── Statistik pelanggaran ──
                 Group::make()
                     ->schema([
                         TextEntry::make('total_points')
